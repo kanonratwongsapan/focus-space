@@ -36,7 +36,7 @@ const extractRelativeDeadline = (title, description) => {
   return null;
 };
 
-// Helper: Gradual Multi-Tier Step-by-Step Priority Escalation
+// Helper: Gradual Multi-Tier Step-by-Step Priority Escalation (0-2 Days = High, 3-5 Days = Medium)
 const getGradualEscalatedPriority = (currentPriority, deadline, isCompleted) => {
   if (!deadline || isCompleted) return { priority: currentPriority, reason: null };
 
@@ -48,17 +48,18 @@ const getGradualEscalatedPriority = (currentPriority, deadline, isCompleted) => 
   const diffTime = targetDate - today;
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  // Tier 1: Due today or overdue (diffDays <= 0) -> Escalate to High
-  if (diffDays <= 0) {
+  // Tier 1: Remaining 0-2 days (or overdue) -> Escalate to High (🔴 Red)
+  if (diffDays <= 2) {
     if (currentPriority !== 'High') {
+      const daysText = diffDays < 0 ? 'เลยกำหนดส่งแล้ว' : diffDays === 0 ? 'กำหนดส่งวันนี้!' : `เหลือเวลาอีก ${diffDays} วัน`;
       return {
         priority: 'High',
-        reason: `⚡ ยกระดับเป็นความสำคัญสูงให้อัตโนมัติ (กำหนดส่งวันนี้!)`
+        reason: `⚡ ยกระดับเป็นความสำคัญสูงให้อัตโนมัติ (${daysText})`
       };
     }
   }
-  // Tier 2: Remaining 1 to 3 days (1 <= diffDays <= 3) -> Escalate Low to Medium
-  else if (diffDays <= 3) {
+  // Tier 2: Remaining 3 to 5 days -> Escalate Low to Medium (🟡 Yellow)
+  else if (diffDays <= 5) {
     if (currentPriority === 'Low') {
       return {
         priority: 'Medium',
