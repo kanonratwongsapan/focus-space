@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { TaskContext } from '../context/TaskContext';
 import { AuthContext } from '../context/AuthContext';
+import { PomodoroContext } from '../context/PomodoroContext';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Sparkles, Clock, CheckCircle2, AlertCircle, ExternalLink, RefreshCw } from 'lucide-react';
 
 const ThaiMonths = [
@@ -11,8 +12,9 @@ const ThaiMonths = [
 const DaysOfWeek = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
 
 const GardenCalendar = ({ setCurrentTab }) => {
-  const { tasks, updateTask, fetchTasks } = useContext(TaskContext);
+  const { tasks, updateTask, fetchTasks, addTask } = useContext(TaskContext);
   const { user } = useContext(AuthContext);
+  const { setSelectedTaskId } = useContext(PomodoroContext) || {};
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [googleEvents, setGoogleEvents] = useState([]);
@@ -21,7 +23,6 @@ const GardenCalendar = ({ setCurrentTab }) => {
   const [quickCreateDate, setQuickCreateDate] = useState(null);
   const [quickTitle, setQuickTitle] = useState('');
   const [viewingDayDetail, setViewingDayDetail] = useState(null); // YYYY-MM-DD
-  const { addTask } = useContext(TaskContext);
 
   const gToken = localStorage.getItem('g_token') || sessionStorage.getItem('g_token');
 
@@ -651,7 +652,7 @@ const GardenCalendar = ({ setCurrentTab }) => {
               }
 
               return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', maxHeight: '350px', overflowY: 'auto', paddingRight: '4px', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', maxHeight: '380px', overflowY: 'auto', padding: '6px 6px 6px 2px', marginBottom: '1.25rem' }}>
                   {/* Focus Space Tasks */}
                   {dayTasks.map(t => {
                     const isHigh = t.priority === 'High';
@@ -744,6 +745,7 @@ const GardenCalendar = ({ setCurrentTab }) => {
                               <button
                                 type="button"
                                 onClick={() => {
+                                  if (setSelectedTaskId) setSelectedTaskId(t._id);
                                   setViewingDayDetail(null);
                                   setCurrentTab('pomodoro');
                                 }}
@@ -768,34 +770,158 @@ const GardenCalendar = ({ setCurrentTab }) => {
                   })}
 
                   {/* Google Calendar Events */}
-                  {dayGEvents.map(g => (
-                    <div
-                      key={g.id}
-                      style={{
-                        padding: '0.9rem',
-                        borderRadius: '16px',
-                        background: '#ffffff',
-                        border: '1px solid rgba(66, 133, 244, 0.3)',
-                        borderLeft: '5px solid #2563eb',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.3rem'
-                      }}
-                    >
-                      <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#2563eb', background: 'rgba(66, 133, 244, 0.12)', padding: '2px 8px', borderRadius: '6px', width: 'fit-content' }}>
-                        📅 GOOGLE CALENDAR EVENT
-                      </span>
-                      <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#1e293b' }}>
-                        {g.summary}
-                      </h4>
-                      {g.description && (
-                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>
-                          {g.description}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+                  {dayGEvents.map(g => {
+                    const cleanTitle = (g.summary || '').replace(/^\[Focus Space\]\s*/i, '');
+                    const matchedTask = tasks.find(t => 
+                      (t.googleEventId && t.googleEventId === g.id) ||
+                      (t.title && t.title.trim().toLowerCase() === cleanTitle.trim().toLowerCase())
+                    );
+
+                    let priority = matchedTask ? matchedTask.priority : 'Medium';
+                    if (!matchedTask) {
+                      const eventDate = viewingDayDetail ? new Date(viewingDayDetail) : new Date();
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      eventDate.setHours(0, 0, 0, 0);
+                      const diffDays = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
+                      priority = diffDays <= 2 ? 'High' : diffDays <= 5 ? 'Medium' : 'Low';
+                    }
+
+                    const isHigh = priority === 'High';
+                    const isMedium = priority === 'Medium';
+                    const badgeBg = isHigh ? 'rgba(244, 63, 94, 0.15)' : isMedium ? 'rgba(245, 158, 11, 0.15)' : 'rgba(76, 175, 80, 0.12)';
+                    const badgeColor = isHigh ? '#e11d48' : isMedium ? '#d97706' : '#2e7d32';
+                    const isCompleted = matchedTask ? matchedTask.completed : false;
+
+                    return (
+                      <div
+                        key={g.id}
+                        style={{
+                          padding: '1rem',
+                          borderRadius: '16px',
+                          background: isCompleted ? 'rgba(241, 245, 249, 0.7)' : '#ffffff',
+                          border: '1px solid rgba(66, 133, 244, 0.3)',
+                          borderLeft: `5px solid ${badgeColor}`,
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.4rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: badgeColor, background: badgeBg, padding: '2px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span>📅 GOOGLE CALENDAR</span>
+                            <span>•</span>
+                            <span>{isHigh ? '🔴 ความสำคัญสูง' : isMedium ? '🟡 ความสำคัญปานกลาง' : '🟢 ความสำคัญทั่วไป'}</span>
+                          </span>
+                          {isCompleted && (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (matchedTask) {
+                                  await updateTask(matchedTask._id, { completed: false });
+                                  if (fetchTasks) fetchTasks();
+                                }
+                              }}
+                              style={{ 
+                                fontSize: '0.72rem', 
+                                fontWeight: 800, 
+                                color: '#2e7d32', 
+                                background: 'rgba(76, 175, 80, 0.15)', 
+                                border: '1px solid rgba(76, 175, 80, 0.3)',
+                                padding: '2px 8px', 
+                                borderRadius: '6px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              ✅ ทำเสร็จแล้ว
+                            </button>
+                          )}
+                        </div>
+
+                        <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: isCompleted ? '#94a3b8' : '#1e293b', textDecoration: isCompleted ? 'line-through' : 'none' }}>
+                          {cleanTitle}
+                        </h4>
+
+                        {g.description && (
+                          <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b', lineHeight: 1.4 }}>
+                            {g.description}
+                          </p>
+                        )}
+
+                        {!isCompleted && (
+                          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem', paddingTop: '0.4rem', borderTop: '1px solid rgba(226, 232, 240, 0.6)' }}>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (matchedTask) {
+                                  await updateTask(matchedTask._id, { completed: true });
+                                } else {
+                                  await addTask({
+                                    title: cleanTitle,
+                                    description: g.description || '',
+                                    deadline: viewingDayDetail,
+                                    priority: priority,
+                                    completed: true,
+                                    googleEventId: g.id
+                                  });
+                                }
+                                if (fetchTasks) fetchTasks();
+                              }}
+                              style={{
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                padding: '5px 12px',
+                                borderRadius: '8px',
+                                border: 'none',
+                                cursor: 'pointer',
+                                background: 'rgba(76, 175, 80, 0.15)',
+                                color: '#2e7d32'
+                              }}
+                            >
+                              ✅ ติ๊กทำเสร็จ
+                            </button>
+
+                            {setCurrentTab && (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  let targetId = matchedTask ? matchedTask._id : null;
+                                  if (!targetId) {
+                                    const created = await addTask({
+                                      title: cleanTitle,
+                                      description: g.description || '',
+                                      deadline: viewingDayDetail,
+                                      priority: priority,
+                                      googleEventId: g.id
+                                    });
+                                    if (created && created._id) targetId = created._id;
+                                  }
+                                  if (targetId && setSelectedTaskId) {
+                                    setSelectedTaskId(targetId);
+                                  }
+                                  setViewingDayDetail(null);
+                                  setCurrentTab('pomodoro');
+                                }}
+                                style={{
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  padding: '5px 12px',
+                                  borderRadius: '8px',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  background: 'rgba(245, 158, 11, 0.15)',
+                                  color: '#d97706'
+                                }}
+                              >
+                                ⏱️ ไปหน้าจับเวลา Pomodoro
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })()}
