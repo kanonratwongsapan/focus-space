@@ -86,4 +86,7 @@ npm install
 npm run dev
 ```
 
-เปิดบราวเซอร์ไปที่ `http://localhost:5173` (หรือ URL ที่ Vite กำหนด)
+เปิดบราวเซอร์ไปที่: **`http://focus-space.com`** *(หรือ `http://localhost`)*
+
+*(หมายเหตุ: สำหรับการเปิดใช้งานผ่านชื่อโดเมนโปรเจกต์ `http://focus-space.com` ให้ตั้งค่าในไฟล์ Windows hosts: `127.0.0.1 focus-space.com`)*
+
