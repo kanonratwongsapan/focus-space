@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from './context/AuthContext';
 import { PomodoroContext } from './context/PomodoroContext';
+import { API_URL } from './apiConfig';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import TaskList from './components/TaskList';
@@ -574,7 +575,7 @@ function OnboardingModal({ user, token, setUser }) {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/profile', {
+      const response = await fetch(`${API_URL}/auth/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

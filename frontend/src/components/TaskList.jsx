@@ -481,10 +481,10 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
 
     if (diffDays < 0) {
       return {
-        text: `⚠️ ช้ากว่ากำหนด ${Math.abs(diffDays)} วัน (${formatted})`,
-        color: 'var(--priority-high)',
-        bg: 'rgba(244, 63, 94, 0.15)',
-        border: 'rgba(244, 63, 94, 0.3)'
+        text: `🚨 เลยกำหนดส่งแล้ว ${Math.abs(diffDays)} วัน (${formatted})`,
+        color: '#e11d48',
+        bg: 'rgba(225, 29, 72, 0.18)',
+        border: 'rgba(225, 29, 72, 0.4)'
       };
     } else if (diffDays === 0) {
       return {
@@ -524,10 +524,19 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
     const query = (searchQuery || '').toLowerCase();
     
     const matchesSearch = titleText.includes(query) || descText.includes(query);
+
+    const isTaskOverdue = !task.completed && task.deadline && (() => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const target = new Date(task.deadline);
+      target.setHours(0, 0, 0, 0);
+      return target < today;
+    })();
     
     const matchesStatus = statusFilter === 'all' || 
                          (statusFilter === 'completed' && task.completed) ||
-                         (statusFilter === 'pending' && !task.completed);
+                         (statusFilter === 'pending' && !task.completed) ||
+                         (statusFilter === 'overdue' && isTaskOverdue);
                          
     const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
     
@@ -1148,6 +1157,47 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
             <span className="pro-stat-title" style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px' }}>🔴 ความสำคัญสูง 👆</span>
             <h3 className="pro-stat-value" style={{ margin: 0, fontSize: '1.45rem', fontWeight: 800, color: '#e11d48' }}>
               {tasks.filter(t => !t.completed && t.priority === 'High').length}
+            </h3>
+          </div>
+        </div>
+
+        {/* Card 3.5: Overdue Tasks */}
+        <div 
+          className={`glass pro-stat-card ${statusFilter === 'overdue' ? 'active' : ''}`}
+          onClick={() => {
+            setStatusFilter('overdue');
+            setPriorityFilter('all');
+            setSelectedTagFilter('all');
+            setGroupBy('none');
+          }}
+          title="กดเพื่อกรองแสดงเฉพาะภารกิจที่เลยกำหนดส่งแล้ว"
+          style={{ 
+            padding: '1.15rem 1.35rem', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '1rem', 
+            background: (statusFilter === 'overdue') ? 'rgba(225, 29, 72, 0.22)' : '#ffffff', 
+            borderRadius: '20px',
+            cursor: 'pointer',
+            border: (statusFilter === 'overdue') ? '2px solid #be123c' : '1px solid rgba(225, 29, 72, 0.3)',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.03)',
+            transition: 'var(--transition-smooth)'
+          }}
+        >
+          <div className="pro-stat-icon" style={{ width: '46px', height: '46px', borderRadius: '14px', background: 'rgba(225, 29, 72, 0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#be123c', flexShrink: 0 }}>
+            <Zap size={22} />
+          </div>
+          <div>
+            <span className="pro-stat-title" style={{ fontSize: '0.72rem', color: '#be123c', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>🚨 เลยกำหนดส่ง 👆</span>
+            <h3 className="pro-stat-value" style={{ margin: 0, fontSize: '1.45rem', fontWeight: 800, color: '#be123c' }}>
+              {tasks.filter(t => {
+                if (t.completed || !t.deadline) return false;
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                const target = new Date(t.deadline);
+                target.setHours(0,0,0,0);
+                return target < today;
+              }).length}
             </h3>
           </div>
         </div>

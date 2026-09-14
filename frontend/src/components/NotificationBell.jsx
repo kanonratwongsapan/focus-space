@@ -71,7 +71,7 @@ const NotificationBell = ({ setCurrentTab }) => {
     const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
-      return { text: `⚠️ ช้ากว่ากำหนด ${Math.abs(diffDays)} วัน`, color: '#f43f5e', bg: 'rgba(244, 63, 94, 0.15)' };
+      return { text: `🚨 เลยกำหนดส่งแล้ว ${Math.abs(diffDays)} วัน`, color: '#e11d48', bg: 'rgba(225, 29, 72, 0.2)' };
     } else if (diffDays === 0) {
       return { text: '🔥 กำหนดส่งวันนี้! (ความสำคัญสูง)', color: '#f43f5e', bg: 'rgba(244, 63, 94, 0.2)' };
     } else if (diffDays === 1) {

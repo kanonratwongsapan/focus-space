@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { API_URL } from '../apiConfig';
 import { Sparkles, Calendar, Timer, BrainCircuit, Heart, ShieldCheck, CheckCircle2, Award, Zap, Star } from 'lucide-react';
 
 const FLOWERS_SHOWCASE = [
@@ -28,7 +29,6 @@ const Login = () => {
     setError(null);
 
     // Fetch global Google Client ID from backend with dynamic hostname
-    const API_URL = `http://${window.location.hostname}:5000/api`;
     fetch(`${API_URL}/auth/config`)
       .then(res => res.json())
       .then(data => {

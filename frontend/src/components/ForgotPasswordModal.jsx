@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_URL } from '../apiConfig';
 import { X, KeyRound, Mail, ShieldCheck, Lock, CheckCircle2, AlertCircle, ArrowRight, Loader2, Sparkles } from 'lucide-react';
 
 const ForgotPasswordModal = ({ onClose, onSuccess }) => {
@@ -12,8 +13,6 @@ const ForgotPasswordModal = ({ onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-
-  const API_URL = `http://${window.location.hostname}:5000/api`;
 
   // Step 1: Request Security OTP Code
   const handleRequestCode = async (e) => {

@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { API_URL } from '../apiConfig';
 import { User, Sparkles, Upload, Check, ShieldCheck, Calendar, LogOut, Key, Mail, Edit3, Award, Flower2 } from 'lucide-react';
 import CustomModal from './CustomModal';
 
@@ -12,7 +13,6 @@ const AVATARS = [
 
 const ProfileSettings = () => {
   const { user, setUser, token, logout } = useContext(AuthContext);
-  const API_URL = `http://${window.location.hostname}:5000/api`;
 
   const [username, setUsername] = useState(user?.username || '');
   const [profileImage, setProfileImage] = useState(user?.profileImage || '');

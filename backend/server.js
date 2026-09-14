@@ -6,6 +6,8 @@ import dotenv from 'dotenv';
 // Import routes
 import authRoutes from './routes/auth.js';
 import taskRoutes from './routes/tasks.js';
+import pomodoroRoutes from './routes/pomodoro.js';
+import dashboardRoutes from './routes/dashboard.js';
 
 dotenv.config();
 
@@ -26,6 +28,8 @@ mongoose.connect(mongoURI)
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/pomodoro', pomodoroRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Basic Route for testing
 app.get('/api/health', (req, res) => {

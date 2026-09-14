@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { AuthContext } from './AuthContext';
+import { API_URL } from '../apiConfig';
 
 export const TaskContext = createContext();
 
@@ -16,7 +17,6 @@ export const TaskProvider = ({ children }) => {
   });
   
   const { token, user } = useContext(AuthContext);
-  const API_URL = `http://${window.location.hostname}:5000/api`;
 
   const notifyDueTasks = (loadedTasks) => {
     if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;

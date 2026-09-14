@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { API_URL } from '../apiConfig';
 import { X, Upload, Check } from 'lucide-react';
 
 const AVATARS = [
@@ -11,7 +12,6 @@ const AVATARS = [
 
 const ProfileModal = ({ onClose }) => {
   const { user, token, logout } = useContext(AuthContext);
-  const API_URL = `http://${window.location.hostname}:5000/api`;
 
   const [username, setUsername] = useState(user?.username || '');
   const [profileImage, setProfileImage] = useState(user?.profileImage || '');
