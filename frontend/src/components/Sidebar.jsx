@@ -46,7 +46,9 @@ const Sidebar = ({ currentTab, setCurrentTab, isOpen, setIsOpen, onOpenProfile }
   const isActive = pomodoroCtx.isActive ?? false;
 
   const formatTimerIndicator = () => {
-    return `${(minutes || 25).toString().padStart(2, '0')}:${(seconds || 0).toString().padStart(2, '0')}`;
+    const m = minutes !== undefined && minutes !== null ? minutes : 25;
+    const s = seconds !== undefined && seconds !== null ? seconds : 0;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   const renderProfileAvatar = () => {
