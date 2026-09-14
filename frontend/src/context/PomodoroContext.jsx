@@ -6,15 +6,62 @@ export const PomodoroContext = createContext();
 export const PomodoroProvider = ({ children }) => {
   const { tasks, updateTask } = useContext(TaskContext);
 
-  const [workDuration, setWorkDuration] = useState(25); // Customizable work duration
-  const [breakDuration, setBreakDuration] = useState(5);   // Customizable break duration
-
-  const [minutes, setMinutes] = useState(25);
-  const [seconds, setSeconds] = useState(0);
-  const [isActive, setIsActive] = useState(false);
-  const [isBreak, setIsBreak] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState('');
+  const [workDuration, setWorkDurationState] = useState(() => {
+    const saved = localStorage.getItem('focus_workDuration');
+    return saved ? parseInt(saved, 10) : 25;
+  });
   
+  const [breakDuration, setBreakDurationState] = useState(() => {
+    const saved = localStorage.getItem('focus_breakDuration');
+    return saved ? parseInt(saved, 10) : 5;
+  });
+
+  const [selectedTaskId, setSelectedTaskIdState] = useState(() => {
+    return localStorage.getItem('focus_selectedTaskId') || '';
+  });
+
+  const [isActive, setIsActive] = useState(() => {
+    const savedActive = localStorage.getItem('focus_isActive') === 'true';
+    const savedTarget = localStorage.getItem('focus_targetEndTime');
+    if (savedActive && savedTarget) {
+      const remainingMs = parseInt(savedTarget, 10) - Date.now();
+      return remainingMs > 0;
+    }
+    return false;
+  });
+
+  const [isBreak, setIsBreak] = useState(() => {
+    return localStorage.getItem('focus_isBreak') === 'true';
+  });
+
+  const [targetEndTime, setTargetEndTime] = useState(() => {
+    const savedTarget = localStorage.getItem('focus_targetEndTime');
+    return savedTarget ? parseInt(savedTarget, 10) : null;
+  });
+
+  const [minutes, setMinutes] = useState(() => {
+    const savedTarget = localStorage.getItem('focus_targetEndTime');
+    const savedActive = localStorage.getItem('focus_isActive') === 'true';
+    if (savedActive && savedTarget) {
+      const remainingSecs = Math.max(0, Math.floor((parseInt(savedTarget, 10) - Date.now()) / 1000));
+      return Math.floor(remainingSecs / 60);
+    }
+    const savedBreak = localStorage.getItem('focus_isBreak') === 'true';
+    const savedWork = localStorage.getItem('focus_workDuration') ? parseInt(localStorage.getItem('focus_workDuration'), 10) : 25;
+    const savedBreakDur = localStorage.getItem('focus_breakDuration') ? parseInt(localStorage.getItem('focus_breakDuration'), 10) : 5;
+    return savedBreak ? savedBreakDur : savedWork;
+  });
+
+  const [seconds, setSeconds] = useState(() => {
+    const savedTarget = localStorage.getItem('focus_targetEndTime');
+    const savedActive = localStorage.getItem('focus_isActive') === 'true';
+    if (savedActive && savedTarget) {
+      const remainingSecs = Math.max(0, Math.floor((parseInt(savedTarget, 10) - Date.now()) / 1000));
+      return remainingSecs % 60;
+    }
+    return 0;
+  });
+
   // Track notification completion summary popup
   const [sessionSummary, setSessionSummary] = useState(null); // { taskTitle, durationMins, cycleCount }
   const [breakSummary, setBreakSummary] = useState(false); // Track break completion popup
@@ -24,6 +71,25 @@ export const PomodoroProvider = ({ children }) => {
   );
 
   const intervalRef = useRef(null);
+
+  const setWorkDuration = (val) => {
+    setWorkDurationState(val);
+    localStorage.setItem('focus_workDuration', val.toString());
+  };
+
+  const setBreakDuration = (val) => {
+    setBreakDurationState(val);
+    localStorage.setItem('focus_breakDuration', val.toString());
+  };
+
+  const setSelectedTaskId = (val) => {
+    setSelectedTaskIdState(val);
+    if (val) {
+      localStorage.setItem('focus_selectedTaskId', val);
+    } else {
+      localStorage.removeItem('focus_selectedTaskId');
+    }
+  };
 
   // Sync timer display with custom durations when not active
   useEffect(() => {
@@ -103,56 +169,63 @@ export const PomodoroProvider = ({ children }) => {
     }
   };
 
+  // Main countdown effect using timestamp calculation
   useEffect(() => {
-    if (isActive) {
+    if (isActive && targetEndTime) {
       intervalRef.current = setInterval(() => {
-        if (seconds === 0) {
-          if (minutes === 0) {
-            // Timer Finished!
-            setIsActive(false);
-            clearInterval(intervalRef.current);
-            
-            if (!isBreak) {
-              // Work finished
-              playAlertSound('success');
-              sendNotification('สมาธิสำเร็จ! 🍅', `ครบรอบเวลาโฟกัส ${workDuration} นาทีแล้ว ได้เวลาพักผ่อน ${breakDuration} นาที`);
-              setIsBreak(true);
-              setMinutes(breakDuration); // Use customizable break
-              
-              let taskTitle = 'รอบโฟกัสทั่วไป';
-              if (selectedTaskId) {
-                const targetTask = tasks.find(t => t._id === selectedTaskId);
-                if (targetTask) {
-                  taskTitle = targetTask.title;
-                  const updatedCycles = (targetTask.pomodoroCycles || 0) + 1;
-                  const updatedTime = (targetTask.timeSpent || 0) + workDuration * 60; // Use customizable workDuration
-                  updateTask(selectedTaskId, {
-                    pomodoroCycles: updatedCycles,
-                    timeSpent: updatedTime
-                  });
-                }
-              }
+        const remainingMs = targetEndTime - Date.now();
+        const totalRemainingSecs = Math.max(0, Math.ceil(remainingMs / 1000));
 
-              // Display time spent summary popup ALWAYS on screen
-              setSessionSummary({
-                taskTitle: taskTitle,
-                durationMins: workDuration,
-                cycleCount: 1
-              });
-            } else {
-              // Break finished
-              playAlertSound('break');
-              sendNotification('หมดเวลาพัก! 🌸', 'ได้เวลากลับมาฟูมฟักสวนสมาธิของคุณแล้วค่ะ');
-              setIsBreak(false);
-              setMinutes(workDuration);
-              setBreakSummary(true);
+        if (totalRemainingSecs <= 0) {
+          // Timer Finished!
+          setIsActive(false);
+          setTargetEndTime(null);
+          localStorage.removeItem('focus_targetEndTime');
+          localStorage.setItem('focus_isActive', 'false');
+          clearInterval(intervalRef.current);
+          
+          if (!isBreak) {
+            // Work finished
+            playAlertSound('success');
+            sendNotification('สมาธิสำเร็จ! 🍅', `ครบรอบเวลาโฟกัส ${workDuration} นาทีแล้ว ได้เวลาพักผ่อน ${breakDuration} นาที`);
+            setIsBreak(true);
+            localStorage.setItem('focus_isBreak', 'true');
+            setMinutes(breakDuration);
+            setSeconds(0);
+            
+            let taskTitle = 'รอบโฟกัสทั่วไป';
+            if (selectedTaskId) {
+              const targetTask = tasks.find(t => t._id === selectedTaskId);
+              if (targetTask) {
+                taskTitle = targetTask.title;
+                const updatedCycles = (targetTask.pomodoroCycles || 0) + 1;
+                const updatedTime = (targetTask.timeSpent || 0) + workDuration * 60;
+                updateTask(selectedTaskId, {
+                  pomodoroCycles: updatedCycles,
+                  timeSpent: updatedTime
+                });
+              }
             }
+
+            // Display time spent summary popup ALWAYS on screen
+            setSessionSummary({
+              taskTitle: taskTitle,
+              durationMins: workDuration,
+              cycleCount: 1
+            });
           } else {
-            setMinutes(minutes - 1);
-            setSeconds(59);
+            // Break finished
+            playAlertSound('break');
+            sendNotification('หมดเวลาพัก! 🌸', 'ได้เวลากลับมาฟูมฟักสวนสมาธิของคุณแล้วค่ะ');
+            setIsBreak(false);
+            localStorage.setItem('focus_isBreak', 'false');
+            setMinutes(workDuration);
+            setSeconds(0);
+            setBreakSummary(true);
           }
         } else {
-          setSeconds(seconds - 1);
+          setMinutes(Math.floor(totalRemainingSecs / 60));
+          setSeconds(totalRemainingSecs % 60);
         }
       }, 1000);
     } else {
@@ -160,10 +233,32 @@ export const PomodoroProvider = ({ children }) => {
     }
 
     return () => clearInterval(intervalRef.current);
-  }, [isActive, minutes, seconds, isBreak, selectedTaskId, tasks, workDuration, breakDuration]);
+  }, [isActive, targetEndTime, isBreak, selectedTaskId, tasks, workDuration, breakDuration]);
 
   const toggleTimer = () => {
-    setIsActive(!isActive);
+    if (!isActive) {
+      // Starting or resuming timer
+      const currentSecondsTotal = minutes * 60 + seconds;
+      const newTarget = Date.now() + (currentSecondsTotal > 0 ? currentSecondsTotal : (isBreak ? breakDuration : workDuration) * 60) * 1000;
+      
+      setTargetEndTime(newTarget);
+      setIsActive(true);
+      
+      localStorage.setItem('focus_targetEndTime', newTarget.toString());
+      localStorage.setItem('focus_isActive', 'true');
+      localStorage.setItem('focus_isBreak', isBreak ? 'true' : 'false');
+      if (selectedTaskId) {
+        localStorage.setItem('focus_selectedTaskId', selectedTaskId);
+      }
+    } else {
+      // Pausing timer
+      setIsActive(false);
+      setTargetEndTime(null);
+      
+      localStorage.setItem('focus_isActive', 'false');
+      localStorage.removeItem('focus_targetEndTime');
+    }
+
     if (notifyPermission === 'default') {
       requestNotificationPermission();
     }
@@ -172,8 +267,13 @@ export const PomodoroProvider = ({ children }) => {
   const resetTimer = () => {
     setIsActive(false);
     setIsBreak(false);
+    setTargetEndTime(null);
     setMinutes(workDuration);
     setSeconds(0);
+
+    localStorage.setItem('focus_isActive', 'false');
+    localStorage.setItem('focus_isBreak', 'false');
+    localStorage.removeItem('focus_targetEndTime');
   };
 
   return (
