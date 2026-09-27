@@ -12,7 +12,7 @@ const ThaiMonths = [
 const DaysOfWeek = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
 
 const GardenCalendar = ({ setCurrentTab }) => {
-  const { tasks, updateTask, fetchTasks, addTask } = useContext(TaskContext);
+  const { tasks, updateTask, fetchTasks, addTask, deleteTask } = useContext(TaskContext);
   const { user } = useContext(AuthContext);
   const { setSelectedTaskId } = useContext(PomodoroContext) || {};
 
@@ -58,6 +58,15 @@ const GardenCalendar = ({ setCurrentTab }) => {
 
   useEffect(() => {
     fetchGoogleEvents();
+
+    const handleTaskDeleted = () => {
+      fetchGoogleEvents();
+    };
+
+    window.addEventListener('focus-space-task-deleted', handleTaskDeleted);
+    return () => {
+      window.removeEventListener('focus-space-task-deleted', handleTaskDeleted);
+    };
   }, [currentDate, gToken]);
 
   // Navigate months
@@ -578,7 +587,7 @@ const GardenCalendar = ({ setCurrentTab }) => {
                 <div style={{ fontSize: '0.8rem', color: '#2e7d32', fontWeight: 700, marginBottom: '1.5rem' }}>
                   📅 กำหนดส่ง: {selectedDayEvents.item.deadline ? new Date(selectedDayEvents.item.deadline).toLocaleDateString('th-TH') : 'ไม่มี'}
                 </div>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                   <button
                     type="button"
                     className="btn btn-primary"
@@ -590,6 +599,20 @@ const GardenCalendar = ({ setCurrentTab }) => {
                     }}
                   >
                     {selectedDayEvents.item.completed ? '↩️ เปลี่ยนเป็นยังไม่เสร็จ' : '✅ ทำเครื่องหมายว่าเสร็จแล้ว'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{ background: 'rgba(244, 63, 94, 0.15)', color: '#e11d48', border: '1px solid rgba(244, 63, 94, 0.3)', padding: '0.6rem 1rem' }}
+                    onClick={async () => {
+                      if (window.confirm('คุณต้องการลบภารกิจนี้ใช่หรือไม่? ข้อมูลจะถูกลบทั้งในระบบและ Google Calendar ค่ะ 🌸')) {
+                        await deleteTask(selectedDayEvents.item._id);
+                        setSelectedDayEvents(null);
+                        fetchGoogleEvents();
+                      }
+                    }}
+                  >
+                    🗑️ ลบภารกิจ
                   </button>
                 </div>
               </>
@@ -612,14 +635,35 @@ const GardenCalendar = ({ setCurrentTab }) => {
                 <div style={{ fontSize: '0.8rem', color: '#2563eb', fontWeight: 700, marginBottom: '1.5rem' }}>
                   🕒 เวลา: {selectedDayEvents.item.start?.dateTime ? new Date(selectedDayEvents.item.start.dateTime).toLocaleString('th-TH') : 'ทั้งวัน'}
                 </div>
-                <button
-                  type="button"
-                  className="btn"
-                  style={{ width: '100%', background: 'rgba(241, 245, 249, 0.8)' }}
-                  onClick={() => setSelectedDayEvents(null)}
-                >
-                  ปิด
-                </button>
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{ flex: 1, background: 'rgba(241, 245, 249, 0.8)' }}
+                    onClick={() => setSelectedDayEvents(null)}
+                  >
+                    ปิด
+                  </button>
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{ background: 'rgba(244, 63, 94, 0.15)', color: '#e11d48', border: '1px solid rgba(244, 63, 94, 0.3)', padding: '0.6rem 1rem' }}
+                    onClick={async () => {
+                      if (window.confirm('คุณต้องการลบกิจกรรมนี้ออกจาก Google Calendar ใช่หรือไม่?')) {
+                        if (gToken) {
+                          await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${selectedDayEvents.item.id}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${gToken}` }
+                          });
+                          fetchGoogleEvents();
+                        }
+                        setSelectedDayEvents(null);
+                      }
+                    }}
+                  >
+                    🗑️ ลบจาก Google Calendar
+                  </button>
+                </div>
               </>
             )}
           </div>
@@ -737,35 +781,14 @@ const GardenCalendar = ({ setCurrentTab }) => {
                           </span>
                         )}
 
-                        {!t.completed && (
-                          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem', paddingTop: '0.4rem', borderTop: '1px solid rgba(226, 232, 240, 0.6)' }}>
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                await updateTask(t._id, { completed: true });
-                                if (fetchTasks) fetchTasks();
-                              }}
-                              style={{
-                                fontSize: '0.75rem',
-                                fontWeight: 700,
-                                padding: '5px 12px',
-                                borderRadius: '8px',
-                                border: 'none',
-                                cursor: 'pointer',
-                                background: 'rgba(76, 175, 80, 0.15)',
-                                color: '#2e7d32'
-                              }}
-                            >
-                              ✅ ติ๊กทำเสร็จ
-                            </button>
-
-                            {setCurrentTab && (
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem', paddingTop: '0.4rem', borderTop: '1px solid rgba(226, 232, 240, 0.6)', flexWrap: 'wrap' }}>
+                          {!t.completed && (
+                            <>
                               <button
                                 type="button"
-                                onClick={() => {
-                                  if (setSelectedTaskId) setSelectedTaskId(t._id);
-                                  setViewingDayDetail(null);
-                                  setCurrentTab('pomodoro');
+                                onClick={async () => {
+                                  await updateTask(t._id, { completed: true });
+                                  if (fetchTasks) fetchTasks();
                                 }}
                                 style={{
                                   fontSize: '0.75rem',
@@ -774,15 +797,61 @@ const GardenCalendar = ({ setCurrentTab }) => {
                                   borderRadius: '8px',
                                   border: 'none',
                                   cursor: 'pointer',
-                                  background: 'rgba(245, 158, 11, 0.15)',
-                                  color: '#d97706'
+                                  background: 'rgba(76, 175, 80, 0.15)',
+                                  color: '#2e7d32'
                                 }}
                               >
-                                ⏱️ ไปหน้าจับเวลา Pomodoro
+                                ✅ ติ๊กทำเสร็จ
                               </button>
-                            )}
-                          </div>
-                        )}
+
+                              {setCurrentTab && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (setSelectedTaskId) setSelectedTaskId(t._id);
+                                    setViewingDayDetail(null);
+                                    setCurrentTab('pomodoro');
+                                  }}
+                                  style={{
+                                    fontSize: '0.75rem',
+                                    fontWeight: 700,
+                                    padding: '5px 12px',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    background: 'rgba(245, 158, 11, 0.15)',
+                                    color: '#d97706'
+                                  }}
+                                >
+                                  ⏱️ ไปหน้าจับเวลา Pomodoro
+                                </button>
+                              )}
+                            </>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (window.confirm('คุณต้องการลบภารกิจนี้ใช่หรือไม่? ข้อมูลจะถูกลบทั้งในระบบและ Google Calendar ค่ะ 🌸')) {
+                                await deleteTask(t._id);
+                                if (fetchTasks) fetchTasks();
+                                fetchGoogleEvents();
+                              }
+                            }}
+                            style={{
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              padding: '5px 12px',
+                              borderRadius: '8px',
+                              border: 'none',
+                              cursor: 'pointer',
+                              background: 'rgba(244, 63, 94, 0.15)',
+                              color: '#e11d48'
+                            }}
+                          >
+                            🗑️ ลบภารกิจ
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
@@ -867,59 +936,25 @@ const GardenCalendar = ({ setCurrentTab }) => {
                           </p>
                         )}
 
-                        {!isCompleted && (
-                          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem', paddingTop: '0.4rem', borderTop: '1px solid rgba(226, 232, 240, 0.6)' }}>
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                if (matchedTask) {
-                                  await updateTask(matchedTask._id, { completed: true });
-                                } else {
-                                  await addTask({
-                                    title: cleanTitle,
-                                    description: g.description || '',
-                                    deadline: viewingDayDetail,
-                                    priority: priority,
-                                    completed: true,
-                                    googleEventId: g.id
-                                  });
-                                }
-                                if (fetchTasks) fetchTasks();
-                              }}
-                              style={{
-                                fontSize: '0.75rem',
-                                fontWeight: 700,
-                                padding: '5px 12px',
-                                borderRadius: '8px',
-                                border: 'none',
-                                cursor: 'pointer',
-                                background: 'rgba(76, 175, 80, 0.15)',
-                                color: '#2e7d32'
-                              }}
-                            >
-                              ✅ ติ๊กทำเสร็จ
-                            </button>
-
-                            {setCurrentTab && (
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem', paddingTop: '0.4rem', borderTop: '1px solid rgba(226, 232, 240, 0.6)', flexWrap: 'wrap' }}>
+                          {!isCompleted && (
+                            <>
                               <button
                                 type="button"
                                 onClick={async () => {
-                                  let targetId = matchedTask ? matchedTask._id : null;
-                                  if (!targetId) {
-                                    const created = await addTask({
+                                  if (matchedTask) {
+                                    await updateTask(matchedTask._id, { completed: true });
+                                  } else {
+                                    await addTask({
                                       title: cleanTitle,
                                       description: g.description || '',
                                       deadline: viewingDayDetail,
                                       priority: priority,
+                                      completed: true,
                                       googleEventId: g.id
                                     });
-                                    if (created && created._id) targetId = created._id;
                                   }
-                                  if (targetId && setSelectedTaskId) {
-                                    setSelectedTaskId(targetId);
-                                  }
-                                  setViewingDayDetail(null);
-                                  setCurrentTab('pomodoro');
+                                  if (fetchTasks) fetchTasks();
                                 }}
                                 style={{
                                   fontSize: '0.75rem',
@@ -928,15 +963,81 @@ const GardenCalendar = ({ setCurrentTab }) => {
                                   borderRadius: '8px',
                                   border: 'none',
                                   cursor: 'pointer',
-                                  background: 'rgba(245, 158, 11, 0.15)',
-                                  color: '#d97706'
+                                  background: 'rgba(76, 175, 80, 0.15)',
+                                  color: '#2e7d32'
                                 }}
                               >
-                                ⏱️ ไปหน้าจับเวลา Pomodoro
+                                ✅ ติ๊กทำเสร็จ
                               </button>
-                            )}
-                          </div>
-                        )}
+
+                              {setCurrentTab && (
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    let targetId = matchedTask ? matchedTask._id : null;
+                                    if (!targetId) {
+                                      const created = await addTask({
+                                        title: cleanTitle,
+                                        description: g.description || '',
+                                        deadline: viewingDayDetail,
+                                        priority: priority,
+                                        googleEventId: g.id
+                                      });
+                                      if (created && created._id) targetId = created._id;
+                                    }
+                                    if (targetId && setSelectedTaskId) {
+                                      setSelectedTaskId(targetId);
+                                    }
+                                    setViewingDayDetail(null);
+                                    setCurrentTab('pomodoro');
+                                  }}
+                                  style={{
+                                    fontSize: '0.75rem',
+                                    fontWeight: 700,
+                                    padding: '5px 12px',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    background: 'rgba(245, 158, 11, 0.15)',
+                                    color: '#d97706'
+                                  }}
+                                >
+                                  ⏱️ ไปหน้าจับเวลา Pomodoro
+                                </button>
+                              )}
+                            </>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (window.confirm('คุณต้องการลบกิจกรรมนี้ออกจาก Google Calendar ใช่หรือไม่?')) {
+                                if (gToken) {
+                                  await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${g.id}`, {
+                                    method: 'DELETE',
+                                    headers: { 'Authorization': `Bearer ${gToken}` }
+                                  });
+                                }
+                                if (matchedTask) {
+                                  await deleteTask(matchedTask._id);
+                                }
+                                fetchGoogleEvents();
+                              }
+                            }}
+                            style={{
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              padding: '5px 12px',
+                              borderRadius: '8px',
+                              border: 'none',
+                              cursor: 'pointer',
+                              background: 'rgba(244, 63, 94, 0.15)',
+                              color: '#e11d48'
+                            }}
+                          >
+                            🗑️ ลบออกจาก Google Calendar
+                          </button>
+                        </div>
                       </div>
                     );
                   })}

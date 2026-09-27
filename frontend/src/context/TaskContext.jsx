@@ -262,19 +262,50 @@ export const TaskProvider = ({ children }) => {
       const taskToDelete = tasks.find(t => t._id === id);
       const gToken = localStorage.getItem('g_token') || sessionStorage.getItem('g_token');
 
-      if (taskToDelete && taskToDelete.googleEventId && user?.googleClientId && gToken) {
-        try {
-          await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${taskToDelete.googleEventId}`, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${gToken}`
+      // 1. Delete from Google Calendar if connected
+      if (taskToDelete && gToken) {
+        if (taskToDelete.googleEventId) {
+          try {
+            await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${taskToDelete.googleEventId}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': `Bearer ${gToken}` }
+            });
+          } catch (calErr) {
+            console.error('Failed to delete Google Calendar event by ID:', calErr);
+          }
+        }
+        // Fallback search & delete by title to catch any synced events
+        if (taskToDelete.title) {
+          try {
+            const cleanTitle = taskToDelete.title.trim().toLowerCase();
+            const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?q=${encodeURIComponent(taskToDelete.title.trim())}`, {
+              headers: { 'Authorization': `Bearer ${gToken}` }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const items = data.items || [];
+              for (const item of items) {
+                const itemSummaryClean = (item.summary || '')
+                  .replace(/^([🚨📌🌱🎯✅]\s*)+/g, '')
+                  .replace(/^\[(ด่วนมาก|ปานกลาง|ทั่วไป|Focus Space|เสร็จแล้ว)\]\s*/gi, '')
+                  .replace(/^\[Focus Space\]\s*/gi, '')
+                  .trim().toLowerCase();
+
+                if (itemSummaryClean === cleanTitle || (item.summary && item.summary.includes(taskToDelete.title.trim()))) {
+                  await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${item.id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${gToken}` }
+                  });
+                }
+              }
             }
-          });
-        } catch (calErr) {
-          console.error('Failed to delete Google Calendar event:', calErr);
+          } catch (searchErr) {
+            console.error('Failed to search & delete Google Calendar event by title:', searchErr);
+          }
         }
       }
 
+      // 2. Delete from Focus Space DB
       const response = await fetch(`${API_URL}/tasks/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -282,6 +313,7 @@ export const TaskProvider = ({ children }) => {
       if (response.ok) {
         setTasks(prev => prev.filter(t => t._id !== id));
         fetchStats();
+        window.dispatchEvent(new Event('focus-space-task-deleted'));
         return { success: true };
       }
       return { success: false };
