@@ -605,11 +605,9 @@ const GardenCalendar = ({ setCurrentTab }) => {
                     className="btn"
                     style={{ background: 'rgba(244, 63, 94, 0.15)', color: '#e11d48', border: '1px solid rgba(244, 63, 94, 0.3)', padding: '0.6rem 1rem' }}
                     onClick={async () => {
-                      if (window.confirm('คุณต้องการลบภารกิจนี้ใช่หรือไม่? ข้อมูลจะถูกลบทั้งในระบบและ Google Calendar ค่ะ 🌸')) {
-                        await deleteTask(selectedDayEvents.item._id);
-                        setSelectedDayEvents(null);
-                        fetchGoogleEvents();
-                      }
+                      await deleteTask(selectedDayEvents.item._id);
+                      setSelectedDayEvents(null);
+                      fetchGoogleEvents();
                     }}
                   >
                     🗑️ ลบภารกิจ
@@ -649,19 +647,17 @@ const GardenCalendar = ({ setCurrentTab }) => {
                     className="btn"
                     style={{ background: 'rgba(244, 63, 94, 0.15)', color: '#e11d48', border: '1px solid rgba(244, 63, 94, 0.3)', padding: '0.6rem 1rem' }}
                     onClick={async () => {
-                      if (window.confirm('คุณต้องการลบกิจกรรมนี้ออกจาก Google Calendar ใช่หรือไม่?')) {
-                        if (gToken) {
-                          await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${selectedDayEvents.item.id}`, {
-                            method: 'DELETE',
-                            headers: { 'Authorization': `Bearer ${gToken}` }
-                          });
-                          fetchGoogleEvents();
-                        }
-                        setSelectedDayEvents(null);
+                      if (gToken) {
+                        await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${selectedDayEvents.item.id}`, {
+                          method: 'DELETE',
+                          headers: { 'Authorization': `Bearer ${gToken}` }
+                        });
+                        fetchGoogleEvents();
                       }
+                      setSelectedDayEvents(null);
                     }}
                   >
-                    🗑️ ลบจาก Google Calendar
+                    🗑️ ลบกิจกรรม
                   </button>
                 </div>
               </>
@@ -832,11 +828,9 @@ const GardenCalendar = ({ setCurrentTab }) => {
                           <button
                             type="button"
                             onClick={async () => {
-                              if (window.confirm('คุณต้องการลบภารกิจนี้ใช่หรือไม่? ข้อมูลจะถูกลบทั้งในระบบและ Google Calendar ค่ะ 🌸')) {
-                                await deleteTask(t._id);
-                                if (fetchTasks) fetchTasks();
-                                fetchGoogleEvents();
-                              }
+                              await deleteTask(t._id);
+                              if (fetchTasks) fetchTasks();
+                              fetchGoogleEvents();
                             }}
                             style={{
                               fontSize: '0.75rem',
@@ -1011,18 +1005,16 @@ const GardenCalendar = ({ setCurrentTab }) => {
                           <button
                             type="button"
                             onClick={async () => {
-                              if (window.confirm('คุณต้องการลบกิจกรรมนี้ออกจาก Google Calendar ใช่หรือไม่?')) {
-                                if (gToken) {
-                                  await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${g.id}`, {
-                                    method: 'DELETE',
-                                    headers: { 'Authorization': `Bearer ${gToken}` }
-                                  });
-                                }
-                                if (matchedTask) {
-                                  await deleteTask(matchedTask._id);
-                                }
-                                fetchGoogleEvents();
+                              if (gToken) {
+                                await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${g.id}`, {
+                                  method: 'DELETE',
+                                  headers: { 'Authorization': `Bearer ${gToken}` }
+                                });
                               }
+                              if (matchedTask) {
+                                await deleteTask(matchedTask._id);
+                              }
+                              fetchGoogleEvents();
                             }}
                             style={{
                               fontSize: '0.75rem',
@@ -1035,7 +1027,7 @@ const GardenCalendar = ({ setCurrentTab }) => {
                               color: '#e11d48'
                             }}
                           >
-                            🗑️ ลบออกจาก Google Calendar
+                            🗑️ ลบกิจกรรม
                           </button>
                         </div>
                       </div>
