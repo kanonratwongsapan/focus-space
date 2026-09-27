@@ -1,16 +1,26 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { TaskContext } from '../context/TaskContext';
 import { AuthContext } from '../context/AuthContext';
-import { Award, Clock, ListTodo, Flame, CheckCircle, BarChart3, Check, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  Award, Clock, ListTodo, Flame, CheckCircle, BarChart3, Check, Calendar, 
+  ChevronLeft, ChevronRight, Sparkles, ArrowRight, BookOpen 
+} from 'lucide-react';
 import WeeklyChart from './WeeklyChart';
 import Scratchpad from './Scratchpad';
+
+const BotanicalQuotes = [
+  "🌱 เมล็ดพันธุ์แห่งความพยายามในวันนี้ จะผลิบานเป็นความสำเร็จที่งดงามในวันข้างหน้า",
+  "🌸 ความก้าวหน้าเล็กๆ น้อยๆ ในทุกวัน นำไปสู่ผลลัพธ์ที่ยิ่งใหญ่เสมอ",
+  "🍃 ให้สมาธิของคุณเติบโตอย่างเงียบสงบ เหมือนต้นไม้ใหญ่ที่แผ่กิ่งก้านอย่างมั่นคง",
+  "🌿 จัดลำดับภารกิจให้ชัดเจน ค่อยๆ ทำทีละอย่าง ด้วยใจที่ผ่อนคลายและมุ่งมั่น",
+  "🌻 ทุกนาทีที่คุณมอบให้กับการโฟกัส คือการรดน้ำดูแลอนาคตของคุณเอง"
+];
 
 const Dashboard = ({ searchQuery, setCurrentTab }) => {
   const { stats, fetchStats, tasks, fetchTasks, updateTask } = useContext(TaskContext);
   const { user } = useContext(AuthContext);
 
   const [dragOverPending, setDragOverPending] = useState(false);
-  const [dragOverCompleted, setDragOverCompleted] = useState(false);
   const [spotlightIdx, setSpotlightIdx] = useState(0);
 
   useEffect(() => {
@@ -19,6 +29,9 @@ const Dashboard = ({ searchQuery, setCurrentTab }) => {
       fetchTasks();
     }
   }, []);
+
+  // Today's Botanical Quote selection based on day of month
+  const todayQuote = BotanicalQuotes[new Date().getDate() % BotanicalQuotes.length];
 
   // Today's Focus Spotlight Task selection with Carousel List
   const todayStr = new Date().toISOString().split('T')[0];
@@ -29,6 +42,18 @@ const Dashboard = ({ searchQuery, setCurrentTab }) => {
   const activeFocusList = urgentTasksList.length > 0 ? urgentTasksList : pendingTasksList;
   const safeIdx = Math.min(spotlightIdx, Math.max(0, activeFocusList.length - 1));
   const focusTask = activeFocusList[safeIdx];
+
+  // Top 5 Urgent Pending Tasks sorted by priority
+  const topPendingTasks = (tasks?.filter(t => !t.completed) || [])
+    .filter(t => {
+      const query = (searchQuery || '').toLowerCase();
+      return t.title.toLowerCase().includes(query) || (t.description && t.description.toLowerCase().includes(query));
+    })
+    .sort((a, b) => {
+      const priorityWeight = { 'High': 3, 'Medium': 2, 'Low': 1 };
+      return (priorityWeight[b.priority] || 2) - (priorityWeight[a.priority] || 2);
+    })
+    .slice(0, 5);
 
   // Live stats calculation with automatic fallback from tasks array
   const totalTasks = stats?.total > 0 ? stats.total : (tasks?.length || 0);
@@ -66,6 +91,8 @@ const Dashboard = ({ searchQuery, setCurrentTab }) => {
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'left' }}>
+      
+      {/* Botanical Header Banner */}
       <header style={{ marginBottom: '1.25rem' }}>
         <div style={{
           display: 'inline-flex',
@@ -80,15 +107,54 @@ const Dashboard = ({ searchQuery, setCurrentTab }) => {
           fontWeight: 700,
           marginBottom: '0.5rem'
         }}>
-          <span>BOTANICAL GARDEN DASHBOARD 🌸</span>
+          <Sparkles size={14} color="#4caf50" />
+          <span>BOTANICAL GARDEN EXECUTIVE DASHBOARD 🌸</span>
         </div>
         <h1 className="page-title dashboard-page-title" style={{ marginBottom: '0.2rem', fontSize: '1.75rem', color: '#1b4332', fontWeight: 800 }}>
           ยินดีต้อนรับสู่สวนแห่งโฟกัส, {user?.username || 'ผู้ใช้งาน'}! 🌸🍃
         </h1>
         <p className="dashboard-page-subtitle" style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>
-          นี่คือสรุปพัฒนาการ การเพาะปลูกภารกิจ และผลผลิตสมาธิของคุณในวันนี้ค่ะ
+          นี่คือสรุปภาพรวมพัฒนาการ การเพาะปลูกภารกิจ และผลผลิตสมาธิของคุณในวันนี้ค่ะ
         </p>
       </header>
+
+      {/* Daily Botanical Motivation Banner Card */}
+      <div 
+        className="glass"
+        style={{
+          marginBottom: '1.25rem',
+          padding: '1rem 1.35rem',
+          borderRadius: '20px',
+          background: 'linear-gradient(135deg, rgba(236, 253, 245, 0.95) 0%, rgba(209, 250, 229, 0.8) 100%)',
+          border: '1px solid rgba(16, 185, 129, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.85rem',
+          boxShadow: '0 4px 15px rgba(16, 185, 129, 0.08)'
+        }}
+      >
+        <div style={{
+          width: '38px',
+          height: '38px',
+          borderRadius: '12px',
+          background: 'rgba(16, 185, 129, 0.2)',
+          color: '#059669',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0
+        }}>
+          <BookOpen size={20} />
+        </div>
+        <div style={{ flex: 1, textAlign: 'left' }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#059669', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
+            💡 BOTANICAL FOCUS TIP • แรงบันดาลใจประจำวัน
+          </span>
+          <p style={{ margin: '2px 0 0 0', fontSize: '0.88rem', fontWeight: 700, color: '#064e3b', lineHeight: 1.4 }}>
+            "{todayQuote}"
+          </p>
+        </div>
+      </div>
 
       {/* Grid: Stat Summary Cards */}
       <div className="dashboard-grid" style={{ marginBottom: '1.25rem', gap: '1rem' }}>
@@ -494,7 +560,6 @@ const Dashboard = ({ searchQuery, setCurrentTab }) => {
               <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0, letterSpacing: '0.5px' }}>เสร็จสิ้น</p>
             </div>
           </div>
-          
         </div>
       </div>
 
@@ -502,275 +567,180 @@ const Dashboard = ({ searchQuery, setCurrentTab }) => {
       <WeeklyChart tasks={tasks} />
 
       {/* Quick Scratchpad Note Widget */}
-      <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ marginBottom: '2rem' }}>
         <Scratchpad />
       </div>
 
-      {/* Drag & Drop Botanical Task Board Section */}
-      <div style={{ marginTop: '2.5rem', textAlign: 'left' }}>
-        <div style={{ marginBottom: '1.25rem' }}>
-          <h3 style={{ marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem', color: '#1b4332', fontWeight: 800 }}>
-            <ListTodo size={22} color="#2e7d32" />
-            แปลงงานปลูกในสวน (Botanical Garden Task Board) 🌸🌱
-          </h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>
-            คุณสามารถลากการ์ดงาน (Drag & Drop) เพื่อสลับแปลงระหว่าง "🌱 แปลงกำลังเพาะปลูก" และ "🌸 เก็บเกี่ยวสำเร็จแล้ว" ได้โดยตรงเลยค่ะ
-          </p>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
-          
-          {/* Column Left: Pending Tasks */}
-          <div 
-            onDragOver={(e) => { e.preventDefault(); setDragOverPending(true); }}
-            onDragLeave={() => setDragOverPending(false)}
-            onDrop={async (e) => {
-              e.preventDefault();
-              setDragOverPending(false);
-              const id = e.dataTransfer.getData('text/plain');
-              if (id) {
-                await updateTask(id, { completed: false });
-                fetchStats();
-              }
-            }}
-            style={{
-              background: dragOverPending ? 'rgba(76, 175, 80, 0.12)' : 'rgba(255, 255, 255, 0.75)',
-              backdropFilter: 'blur(10px)',
-              border: dragOverPending ? '2px dashed #4caf50' : '1px solid rgba(76, 175, 80, 0.25)',
-              borderRadius: '20px',
-              padding: '1.25rem',
-              minHeight: '320px',
-              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.03)',
-              transition: 'var(--transition-smooth)'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', paddingBottom: '0.75rem', borderBottom: '1px solid rgba(76, 175, 80, 0.15)' }}>
-              <h4 style={{ margin: 0, fontWeight: 800, fontSize: '0.95rem', color: '#1b4332', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <span>🌱 แปลงกำลังเพาะปลูก</span>
-              </h4>
-              <span style={{ fontSize: '0.78rem', fontWeight: 800, background: 'rgba(76, 175, 80, 0.15)', color: '#2e7d32', padding: '3px 10px', borderRadius: '12px' }}>
-                {tasks?.filter(t => !t.completed).filter(t => {
-                  const query = (searchQuery || '').toLowerCase();
-                  return t.title.toLowerCase().includes(query) || (t.description && t.description.toLowerCase().includes(query));
-                }).length || 0} รายการ
-              </span>
-            </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {tasks && tasks.filter(t => !t.completed).filter(t => {
-                const query = (searchQuery || '').toLowerCase();
-                return t.title.toLowerCase().includes(query) || (t.description && t.description.toLowerCase().includes(query));
-              }).length === 0 ? (
-                <div style={{ padding: '3rem 1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.88rem', border: '1px dashed rgba(76, 175, 80, 0.2)', borderRadius: '14px', background: 'rgba(255, 255, 255, 0.4)' }}>
-                  🌱 แปลงเพาะปลูกนี้ว่างอยู่ พร้อมรับงานใหม่ค่ะ!
-                </div>
-              ) : (
-                tasks && tasks.filter(t => !t.completed).filter(t => {
-                  const query = (searchQuery || '').toLowerCase();
-                  return t.title.toLowerCase().includes(query) || (t.description && t.description.toLowerCase().includes(query));
-                }).map(t => (
-                  <div
-                    key={t._id}
-                    draggable
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData('text/plain', t._id);
-                    }}
-                    style={{
-                      background: '#ffffff',
-                      border: '1px solid rgba(76, 175, 80, 0.2)',
-                      borderLeft: `5px solid ${t.priority === 'High' ? '#f43f5e' : t.priority === 'Medium' ? '#f59e0b' : '#3b82f6'}`,
-                      borderRadius: '14px',
-                      padding: '0.85rem 1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      cursor: 'grab',
-                      boxShadow: '0 4px 14px rgba(0, 0, 0, 0.04)',
-                      transition: 'all 0.2s ease-in-out'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 8px 20px rgba(76, 175, 80, 0.12)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 14px rgba(0, 0, 0, 0.04)';
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0, flex: 1 }}>
-                      <div 
-                        onClick={async () => {
-                          await updateTask(t._id, { completed: true });
-                          fetchStats();
-                        }}
-                        title="คลิกเพื่อทำเครื่องหมายว่าเสร็จสิ้นแล้ว"
-                        style={{
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '6px',
-                          border: '2px solid rgba(76, 175, 80, 0.4)',
-                          background: '#ffffff',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.borderColor = '#2e7d32'}
-                        onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(76, 175, 80, 0.4)'}
-                      />
-                      <div style={{ textAlign: 'left', minWidth: 0, paddingRight: '0.5rem' }}>
-                        <p style={{ margin: 0, fontWeight: 700, fontSize: '0.88rem', color: '#1b4332', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {t.title}
-                        </p>
-                        {t.deadline && (
-                          <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.15rem' }}>
-                            <Calendar size={11} color="#4caf50" /> {new Date(t.deadline).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexShrink: 0 }}>
-                      <span style={{
-                        fontSize: '0.72rem',
-                        fontWeight: 700,
-                        padding: '3px 8px',
-                        borderRadius: '10px',
-                        background: 'rgba(76, 175, 80, 0.15)',
-                        color: '#2e7d32'
-                      }}>
-                        🌱 {t.progress || 0}%
-                      </span>
-                      <span style={{
-                        fontSize: '0.72rem',
-                        fontWeight: 700,
-                        padding: '3px 9px',
-                        borderRadius: '10px',
-                        background: t.priority === 'High' ? 'rgba(244, 63, 94, 0.12)' : t.priority === 'Medium' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(59, 130, 246, 0.12)',
-                        color: t.priority === 'High' ? '#e11d48' : t.priority === 'Medium' ? '#d97706' : '#2563eb'
-                      }}>
-                        {t.priority === 'High' ? '🔴 สูง' : t.priority === 'Medium' ? '🟡 กลาง' : '🔵 ต่ำ'}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+      {/* Top 5 Priority Focus Checklist Section */}
+      <div style={{ marginTop: '2rem', textAlign: 'left' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+          <div>
+            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', color: '#1b4332', fontWeight: 800 }}>
+              <ListTodo size={20} color="#2e7d32" />
+              Top 5 ภารกิจเร่งด่วนประจำวัน (Daily High-Priority Focus) 🎯🌱
+            </h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: '2px 0 0 0' }}>
+              รายการภารกิจสำคัญสูงสุด 5 อันดับแรกที่ควรทำก่อนในวันนี้ค่ะ
+            </p>
           </div>
 
-          {/* Column Right: Completed Tasks */}
-          <div 
-            onDragOver={(e) => { e.preventDefault(); setDragOverCompleted(true); }}
-            onDragLeave={() => setDragOverCompleted(false)}
-            onDrop={async (e) => {
-              e.preventDefault();
-              setDragOverCompleted(false);
-              const id = e.dataTransfer.getData('text/plain');
-              if (id) {
-                await updateTask(id, { completed: true });
-                fetchStats();
-              }
-            }}
-            style={{
-              background: dragOverCompleted ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 255, 255, 0.75)',
-              backdropFilter: 'blur(10px)',
-              border: dragOverCompleted ? '2px dashed #10b981' : '1px solid rgba(76, 175, 80, 0.25)',
-              borderRadius: '20px',
-              padding: '1.25rem',
-              minHeight: '320px',
-              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.03)',
-              transition: 'var(--transition-smooth)'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', paddingBottom: '0.75rem', borderBottom: '1px solid rgba(76, 175, 80, 0.15)' }}>
-              <h4 style={{ margin: 0, fontWeight: 800, fontSize: '0.95rem', color: '#1b4332', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <span>🌸 เก็บเกี่ยวสำเร็จแล้ว</span>
-              </h4>
-              <span style={{ fontSize: '0.78rem', fontWeight: 800, background: 'rgba(16, 185, 129, 0.15)', color: '#059669', padding: '3px 10px', borderRadius: '12px' }}>
-                {tasks?.filter(t => t.completed).filter(t => {
-                  const query = (searchQuery || '').toLowerCase();
-                  return t.title.toLowerCase().includes(query) || (t.description && t.description.toLowerCase().includes(query));
-                }).length || 0} รายการ
-              </span>
-            </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {tasks && tasks.filter(t => t.completed).filter(t => {
-                const query = (searchQuery || '').toLowerCase();
-                return t.title.toLowerCase().includes(query) || (t.description && t.description.toLowerCase().includes(query));
-              }).length === 0 ? (
-                <div style={{ padding: '3rem 1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.88rem', border: '1px dashed rgba(76, 175, 80, 0.2)', borderRadius: '14px', background: 'rgba(255, 255, 255, 0.4)' }}>
-                  🌸 ยังไม่มีผลผลิตที่เก็บเกี่ยวในแปลงนี้ค่ะ!
-                </div>
-              ) : (
-                tasks && tasks.filter(t => t.completed).filter(t => {
-                  const query = (searchQuery || '').toLowerCase();
-                  return t.title.toLowerCase().includes(query) || (t.description && t.description.toLowerCase().includes(query));
-                }).map(t => (
-                  <div
-                    key={t._id}
-                    draggable
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData('text/plain', t._id);
-                    }}
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.85)',
-                      border: '1px solid rgba(76, 175, 80, 0.18)',
-                      borderRadius: '14px',
-                      padding: '0.85rem 1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      cursor: 'grab',
-                      opacity: 0.85,
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.03)',
-                      transition: 'all 0.2s ease-in-out'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.opacity = '1';
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.opacity = '0.85';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0, flex: 1 }}>
-                      <div 
-                        onClick={async () => {
-                          await updateTask(t._id, { completed: false });
-                          fetchStats();
-                        }}
-                        title="คลิกเพื่อยกเลิกการทำเสร็จ"
-                        style={{
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '6px',
-                          border: '2px solid #10b981',
-                          background: '#10b981',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0
-                        }}
-                      >
-                        <Check size={12} color="white" />
-                      </div>
-                      <div style={{ textAlign: 'left', minWidth: 0 }}>
-                        <p style={{ margin: 0, fontWeight: 600, fontSize: '0.88rem', color: '#64748b', textDecoration: 'line-through', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {t.title}
-                        </p>
-                      </div>
+          {setCurrentTab && (
+            <button
+              type="button"
+              onClick={() => setCurrentTab('tasks')}
+              style={{
+                background: 'rgba(76, 175, 80, 0.12)',
+                border: '1px solid rgba(76, 175, 80, 0.3)',
+                color: '#2e7d32',
+                padding: '6px 14px',
+                borderRadius: '12px',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#4caf50';
+                e.currentTarget.style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(76, 175, 80, 0.12)';
+                e.currentTarget.style.color = '#2e7d32';
+              }}
+            >
+              <span>จัดการภารกิจทั้งหมด ({pendingTasks} งานค้าง)</span>
+              <ArrowRight size={14} />
+            </button>
+          )}
+        </div>
+
+        {/* Task Cards Container */}
+        <div 
+          onDragOver={(e) => { e.preventDefault(); setDragOverPending(true); }}
+          onDragLeave={() => setDragOverPending(false)}
+          onDrop={async (e) => {
+            e.preventDefault();
+            setDragOverPending(false);
+            const id = e.dataTransfer.getData('text/plain');
+            if (id) {
+              await updateTask(id, { completed: false });
+              fetchStats();
+            }
+          }}
+          style={{
+            background: dragOverPending ? 'rgba(76, 175, 80, 0.12)' : 'rgba(255, 255, 255, 0.75)',
+            backdropFilter: 'blur(10px)',
+            border: dragOverPending ? '2px dashed #4caf50' : '1px solid rgba(76, 175, 80, 0.25)',
+            borderRadius: '20px',
+            padding: '1.25rem',
+            minHeight: '180px',
+            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.03)',
+            transition: 'var(--transition-smooth)'
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {topPendingTasks.length === 0 ? (
+              <div style={{ padding: '2.5rem 1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.88rem', border: '1px dashed rgba(76, 175, 80, 0.2)', borderRadius: '14px', background: 'rgba(255, 255, 255, 0.4)' }}>
+                🌸 ยอดเยี่ยมมากค่ะ! ไม่มีภารกิจความสำคัญสูงค้างส่งในตอนนี้ สวนของคุณเป็นระเบียบเรียบร้อยแล้วค่ะ 🍃
+              </div>
+            ) : (
+              topPendingTasks.map((t, idx) => (
+                <div
+                  key={t._id}
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('text/plain', t._id);
+                  }}
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid rgba(76, 175, 80, 0.2)',
+                    borderLeft: `5px solid ${t.priority === 'High' ? '#f43f5e' : t.priority === 'Medium' ? '#f59e0b' : '#3b82f6'}`,
+                    borderRadius: '14px',
+                    padding: '0.85rem 1.15rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: 'grab',
+                    boxShadow: '0 4px 14px rgba(0, 0, 0, 0.04)',
+                    transition: 'all 0.2s ease-in-out'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(76, 175, 80, 0.12)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(0, 0, 0, 0.04)';
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', minWidth: 0, flex: 1 }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#2e7d32', background: 'rgba(76, 175, 80, 0.15)', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {idx + 1}
+                    </span>
+
+                    <div 
+                      onClick={async () => {
+                        await updateTask(t._id, { completed: true });
+                        fetchStats();
+                      }}
+                      title="คลิกเพื่อทำเครื่องหมายว่าเสร็จสิ้นแล้ว"
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '6px',
+                        border: '2px solid rgba(76, 175, 80, 0.4)',
+                        background: '#ffffff',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.borderColor = '#2e7d32'}
+                      onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(76, 175, 80, 0.4)'}
+                    />
+
+                    <div style={{ textAlign: 'left', minWidth: 0, paddingRight: '0.5rem' }}>
+                      <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem', color: '#1b4332', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {t.title}
+                      </p>
+                      {t.deadline && (
+                        <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.15rem' }}>
+                          <Calendar size={11} color="#4caf50" /> {new Date(t.deadline).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                      )}
                     </div>
-                    <span style={{ fontSize: '0.72rem', color: '#059669', background: 'rgba(16, 185, 129, 0.12)', padding: '2px 8px', borderRadius: '8px', fontWeight: 700 }}>
-                      🌸 สำเร็จ
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexShrink: 0 }}>
+                    <span style={{
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      padding: '3px 8px',
+                      borderRadius: '10px',
+                      background: 'rgba(76, 175, 80, 0.15)',
+                      color: '#2e7d32'
+                    }}>
+                      🌱 {t.progress || 0}%
+                    </span>
+                    <span style={{
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      padding: '3px 9px',
+                      borderRadius: '10px',
+                      background: t.priority === 'High' ? 'rgba(244, 63, 94, 0.12)' : t.priority === 'Medium' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(59, 130, 246, 0.12)',
+                      color: t.priority === 'High' ? '#e11d48' : t.priority === 'Medium' ? '#d97706' : '#2563eb'
+                    }}>
+                      {t.priority === 'High' ? '🔴 สูง' : t.priority === 'Medium' ? '🟡 กลาง' : '🔵 ต่ำ'}
                     </span>
                   </div>
-                ))
-              )}
-            </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
