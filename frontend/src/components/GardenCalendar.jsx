@@ -158,6 +158,24 @@ const GardenCalendar = ({ setCurrentTab }) => {
     });
   };
 
+  // Filter out Google Calendar events that are duplicates of synced Focus Space tasks
+  const isFocusSpaceDuplicate = (gEvent) => {
+    if (!gEvent || !gEvent.summary) return false;
+    const summary = gEvent.summary.trim();
+    const cleanSummary = summary
+      .replace(/^([🚨📌🌱🎯✅]\s*)+/g, '')
+      .replace(/^\[(ด่วนมาก|ปานกลาง|ทั่วไป|Focus Space|เสร็จแล้ว)\]\s*/gi, '')
+      .replace(/^\[Focus Space\]\s*/gi, '')
+      .trim().toLowerCase();
+
+    return (tasks || []).some(t => {
+      if (t.googleEventId && t.googleEventId === gEvent.id) return true;
+      if (!t.title) return false;
+      const cleanTaskTitle = t.title.trim().toLowerCase();
+      return cleanTaskTitle === cleanSummary || summary.includes(t.title.trim());
+    });
+  };
+
   // Handle Quick Task Add from Calendar
   const handleQuickAdd = async (e) => {
     e.preventDefault();
