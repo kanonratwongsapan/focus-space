@@ -246,9 +246,12 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
       return;
     }
     
+    const priorityEmoji = task.priority === 'High' ? '🚨' : task.priority === 'Medium' ? '📌' : '🌱';
+    const priorityLabel = task.priority === 'High' ? '[ด่วนมาก]' : task.priority === 'Medium' ? '[ปานกลาง]' : '[ทั่วไป]';
+
     const eventData = {
-      summary: `🎯 [Focus Space] ${task.title}`,
-      description: task.description || 'สร้างจากระบบจัดการงานอัจฉริยะ Focus Space',
+      summary: `${priorityEmoji} ${priorityLabel} ${task.title}`,
+      description: `${task.description || 'สร้างจากระบบจัดการงานอัจฉริยะ Focus Space'}\n\n---\n🌱 โฟกัสและติดตามงานนี้ต่อได้ในระบบ Focus Space`,
       start: {
         date: new Date(task.deadline).toISOString().split('T')[0]
       },
@@ -258,6 +261,16 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
           d.setDate(d.getDate() + 1); // exclusive end date for all-day event
           return d.toISOString().split('T')[0];
         })()
+      },
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: 'popup', minutes: 3 * 24 * 60 }, // 📱 3 วันล่วงหน้า (4320 นาที)
+          { method: 'email', minutes: 3 * 24 * 60 }, // 📧 อีเมลล่วงหน้า 3 วัน
+          { method: 'popup', minutes: 1 * 24 * 60 }, // 📱 1 วันล่วงหน้า (1440 นาที)
+          { method: 'email', minutes: 1 * 24 * 60 }, // 📧 อีเมลล่วงหน้า 1 วัน
+          { method: 'popup', minutes: 9 * 60 }        // 📱 เช้าวันส่งงาน (09:00 น.)
+        ]
       }
     };
 
@@ -684,11 +697,13 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
               fontSize: '0.78rem',
               color: 'var(--text-muted)',
               display: '-webkit-box',
-              WebkitLineClamp: 2,
+              WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              lineHeight: 1.45
+              lineHeight: 1.45,
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word'
             }}>
               {task.description}
             </p>
@@ -1561,11 +1576,11 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                 <label className="form-label">รายละเอียดงาน (Description) *</label>
                 <textarea
                   className="form-input"
-                  rows="3"
-                  placeholder="กรอกวัตถุประสงค์ หรือ สิ่งที่จำเป็นต้องส่ง..."
+                  rows="5"
+                  placeholder="กรอกรายละเอียดงาน หรือก๊อปปี้ข้อความสั่งการบ้านจากอาจารย์มาวางได้เลย ระบบจะรักษาย่อหน้าและขึ้นบรรทัดให้อัตโนมัติค่ะ..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  style={{ resize: 'vertical' }}
+                  style={{ resize: 'vertical', whiteSpace: 'pre-wrap', lineHeight: 1.5, fontFamily: 'inherit' }}
                   required
                 />
               </div>
@@ -1714,10 +1729,10 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                 <label className="form-label">รายละเอียดงาน (Description) *</label>
                 <textarea
                   className="form-input"
-                  rows="3"
+                  rows="5"
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  style={{ resize: 'vertical' }}
+                  style={{ resize: 'vertical', whiteSpace: 'pre-wrap', lineHeight: 1.5, fontFamily: 'inherit' }}
                   required
                 />
               </div>

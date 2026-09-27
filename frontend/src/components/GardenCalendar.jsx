@@ -553,7 +553,7 @@ const GardenCalendar = ({ setCurrentTab }) => {
                   {selectedDayEvents.item.title}
                 </h3>
                 {selectedDayEvents.item.description && (
-                  <p style={{ fontSize: '0.85rem', color: '#64748b', lineHeight: 1.5, marginBottom: '1rem' }}>
+                  <p style={{ fontSize: '0.85rem', color: '#64748b', lineHeight: 1.5, marginBottom: '1rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                     {selectedDayEvents.item.description}
                   </p>
                 )}
@@ -587,7 +587,7 @@ const GardenCalendar = ({ setCurrentTab }) => {
                   {selectedDayEvents.item.summary}
                 </h3>
                 {selectedDayEvents.item.description && (
-                  <p style={{ fontSize: '0.85rem', color: '#64748b', lineHeight: 1.5, marginBottom: '1rem' }}>
+                  <p style={{ fontSize: '0.85rem', color: '#64748b', lineHeight: 1.5, marginBottom: '1rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                     {selectedDayEvents.item.description}
                   </p>
                 )}
