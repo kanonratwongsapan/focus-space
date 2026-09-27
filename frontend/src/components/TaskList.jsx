@@ -771,6 +771,32 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
           </div>
 
           <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+            {task.deadline && !task.completed && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  syncToGoogleCalendar(task);
+                }}
+                style={{
+                  background: task.googleEventId ? 'rgba(76, 175, 80, 0.15)' : 'rgba(66, 133, 244, 0.12)',
+                  border: task.googleEventId ? '1px solid rgba(76, 175, 80, 0.3)' : '1px solid rgba(66, 133, 244, 0.3)',
+                  color: task.googleEventId ? '#2e7d32' : '#2563eb',
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                  transition: 'var(--transition-smooth)'
+                }}
+                title={task.googleEventId ? "อัปเดตงานใน Google Calendar" : "กดเพื่อซิงค์งานไปยัง Google Calendar"}
+              >
+                <Calendar size={12} />
+                <span>{task.googleEventId ? "ซิงค์แล้ว" : "ซิงค์ปฏิทิน"}</span>
+              </button>
+            )}
             {!task.completed && (
               <button 
                 onClick={(e) => {
@@ -937,6 +963,32 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
           )}
 
           <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+            {task.deadline && !task.completed && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  syncToGoogleCalendar(task);
+                }}
+                style={{
+                  background: task.googleEventId ? 'rgba(76, 175, 80, 0.15)' : 'rgba(66, 133, 244, 0.12)',
+                  border: task.googleEventId ? '1px solid rgba(76, 175, 80, 0.3)' : '1px solid rgba(66, 133, 244, 0.3)',
+                  color: task.googleEventId ? '#2e7d32' : '#2563eb',
+                  cursor: 'pointer',
+                  padding: '5px 9px',
+                  borderRadius: '6px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'var(--transition-smooth)'
+                }}
+                title={task.googleEventId ? "อัปเดตงานใน Google Calendar" : "กดเพื่อซิงค์งานไปยัง Google Calendar"}
+              >
+                <Calendar size={13} />
+                <span>{task.googleEventId ? "ซิงค์แล้ว" : "ซิงค์ปฏิทิน"}</span>
+              </button>
+            )}
             {!task.completed && (
               <button 
                 onClick={(e) => {

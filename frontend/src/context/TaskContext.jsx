@@ -43,11 +43,14 @@ export const TaskProvider = ({ children }) => {
 
   const autoSyncToGoogleCalendar = async (task, nextCompletedState = false) => {
     const gToken = localStorage.getItem('g_token') || sessionStorage.getItem('g_token');
-    if (!user?.googleClientId || !gToken || !task.deadline) return;
+    if (!gToken || !task.deadline) return;
+
+    const priorityEmoji = task.priority === 'High' ? '🚨' : task.priority === 'Medium' ? '📌' : '🌱';
+    const priorityLabel = task.priority === 'High' ? '[ด่วนมาก]' : task.priority === 'Medium' ? '[ปานกลาง]' : '[ทั่วไป]';
 
     const eventData = {
-      summary: `${nextCompletedState ? '✅ [เสร็จแล้ว] ' : '🎯 '}[Focus Space] ${task.title}`,
-      description: task.description || 'สร้างจากระบบจัดการงานอัจฉริยะ Focus Space',
+      summary: `${nextCompletedState ? '✅ [เสร็จแล้ว] ' : `${priorityEmoji} ${priorityLabel} `}${task.title}`,
+      description: `${task.description || 'สร้างจากระบบจัดการงานอัจฉริยะ Focus Space'}\n\n---\n🌱 โฟกัสและติดตามงานนี้ต่อได้ในระบบ Focus Space`,
       start: {
         date: new Date(task.deadline).toISOString().split('T')[0]
       },
@@ -57,6 +60,16 @@ export const TaskProvider = ({ children }) => {
           d.setDate(d.getDate() + 1);
           return d.toISOString().split('T')[0];
         })()
+      },
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: 'popup', minutes: 3 * 24 * 60 }, // 📱 3 วันล่วงหน้า (4320 นาที)
+          { method: 'email', minutes: 3 * 24 * 60 }, // 📧 อีเมลล่วงหน้า 3 วัน
+          { method: 'popup', minutes: 1 * 24 * 60 }, // 📱 1 วันล่วงหน้า (1440 นาที)
+          { method: 'email', minutes: 1 * 24 * 60 }, // 📧 อีเมลล่วงหน้า 1 วัน
+          { method: 'popup', minutes: 9 * 60 }        // 📱 เช้าวันส่งงาน (09:00 น.)
+        ]
       }
     };
 
