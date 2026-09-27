@@ -640,7 +640,7 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
             {task.deadline && !task.completed && (
               <span 
                 style={{
-                  padding: '3px 7px',
+                  padding: '4px 6px',
                   fontSize: '0.8rem',
                   borderRadius: '8px',
                   border: task.googleEventId ? '1px solid rgba(66, 133, 244, 0.35)' : '1px solid rgba(148, 163, 184, 0.25)',
@@ -649,7 +649,8 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  transition: 'var(--transition-smooth)'
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -657,7 +658,7 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                 }}
                 title={task.googleEventId ? 'เชื่อมต่อกับ Google Calendar แล้ว (กดเพื่อซิงค์อัปเดตซ้ำ)' : 'กดเพื่อซิงค์ไปยัง Google Calendar'}
               >
-                🏛️
+                <Calendar size={14} color={task.googleEventId ? '#2563eb' : '#64748b'} />
               </span>
             )}
             <span 
@@ -895,7 +896,7 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
             {task.deadline && !task.completed && (
               <span 
                 style={{
-                  padding: '2px 5px',
+                  padding: '3px 5px',
                   fontSize: '0.75rem',
                   borderRadius: '6px',
                   border: task.googleEventId ? '1px solid rgba(66, 133, 244, 0.35)' : '1px solid rgba(148, 163, 184, 0.25)',
@@ -904,7 +905,8 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  transition: 'var(--transition-smooth)'
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -912,7 +914,7 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                 }}
                 title={task.googleEventId ? 'เชื่อมต่อกับ Google Calendar แล้ว (กดเพื่อซิงค์อัปเดตซ้ำ)' : 'กดเพื่อซิงค์ไปยัง Google Calendar'}
               >
-                🏛️
+                <Calendar size={13} color={task.googleEventId ? '#2563eb' : '#64748b'} />
               </span>
             )}
             <span 
