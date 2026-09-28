@@ -1,27 +1,57 @@
-# 🌿 Focus Space - Task Management & Pomodoro Productivity Application
+# 🌸 Focus Space - AI-Powered Botanical Task & Focus Management System
 
-Focus Space คือเว็บแอปพลิเคชันบริหารจัดการเวลาและเพิ่มประสิทธิภาพในการทำงาน (Productivity & Task Management App) ที่ผสานระบบ **Pomodoro Timer**, **Task Tracker**, **Botanical Progress Visualization**, **Gradual Priority Escalation**, **Google OAuth Login**, และ **AI Study Advisor (Gemini)** ไว้ด้วยกัน
+> **ระบบจัดการภารกิจและฟูมฟักสมาธิสไตล์สวนพฤกษาด้วยปัญญาประดิษฐ์**  
+> **โครงงานปริญญานิพนธ์**: มหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน (มทร.อีสาน วิทยาเขตขอนแก่น - RMUTI)  
+> **นักศึกษา**: นางสาว กนลรัตน์ วงศ์ษาพาล (รหัสนักศึกษา 67332310142-2)  
+> **อาจารย์ที่ปรึกษา**: อ.ดร.ปิยะนุช ตังกิตติพล  
+> **เอกสารระบบอ้างอิง**: `Focus_Space_System_Documentation.docx` (ฉบับวันที่ 28 กันยายน 2569)
 
 ---
 
-## 🚀 Key Features (ฟีเจอร์หลัก)
+## 🌐 Live Production Links (ลิงก์เข้าใช้งานระบบจริง)
 
-1. **User Authentication & Google OAuth**: ระบบสมัครสมาชิก/เข้าสู่ระบบด้วย Email/Password และ Google Sign-In
-2. **Task & Target Hours Tracker**: การจัดการงาน กำหนดเวลาเป้าหมาย (Mins/Hours) พร้อมหลอดพลัง botanical progress bar
-3. **Gradual Priority Escalation**: ระบบปรับความสำคัญของงานตามกำหนดส่งอัตโนมัติ (🟢 Low ➔ 🟡 Medium ➔ 🔴 High/Overdue)
-4. **Dashboard Today's Focus Spotlight**: การเลือกสปอตไลท์งานสำคัญประจำวัน พร้อมทางลัดเข้าสู่ระบบ Pomodoro Timer
-5. **Pomodoro Timer & Focus Sessions**: นาฬิกาจับเวลาถอยหลัง 25/5 นาที พร้อมบันทึกประวัติ Focus Session
-6. **AI Advisor (Google Gemini API)**: ผู้ช่วยอัจฉริยะวิเคราะห์ตารางงาน ให้คำแนะนำการจัดเวลา และประเมินภาระงานประจำวัน
-7. **Botanical Theme UI**: อินเทอร์เฟซโทนสีเขียวธรรมชาติ สบายตา และมี Widget บันทึกอารมณ์/ข้อความให้กำลังใจ
+- **Frontend Application (Vercel)**: [https://focus-space-seven.vercel.app](https://focus-space-seven.vercel.app)
+- **Backend REST API (Render)**: [https://focus-space-backend.onrender.com](https://focus-space-backend.onrender.com)
+- **Database**: MongoDB Atlas Cloud Database (`Cluster0` / `focus-space-db`)
+
+---
+
+## 🚀 Core Features (ฟีเจอร์หลักของระบบ)
+
+1. **🔒 Institutional Google OAuth 2.0 (@rmuti.ac.th)**:
+   - เข้าสู่ระบบ 1-Click ปลอดภัย รองรับเฉพาะบัญชีสถาบัน มทร.อีสาน (`@rmuti.ac.th`)
+   - ขอสิทธิ์จัดการปฏิทิน Google Calendar ล่วงหน้าโดยอัตโนมัติ
+
+2. **🤖 AI-Powered Task Prioritization (Google Gemini 2.5 Flash)**:
+   - วิเคราะห์ข้อความภารกิจภาษาไทย/อังกฤษ สกัดคำบอกความด่วน คัดกรองความสำคัญ (`High` / `Medium` / `Low`)
+   - ติดป้ายเหตุผล `✨ AI: ...` พร้อมระบบสำรองความปลอดภัย 3 ชั้น (`Gemini AI` ➔ `Backend Rules` ➔ `Frontend Fallbacks`)
+
+3. **📅 Google Calendar API v3 Integration**:
+   - ซิงค์เดดไลน์กิจกรรมแบบ All-Day ลง Google Calendar อัตโนมัติในคลิกเดียว
+   - รองรับการอัปเดตและลบกิจกรรมอัตโนมัติ 1-Click ทั้งจาก MongoDB Atlas และ Google Calendar
+
+4. **🍅 Real-Timestamp Botanical Pomodoro Timer**:
+   - นาฬิกาสมาธิ 25 นาที คำนวณเวลาจาก `Date.now()` ป้องกันเวลาคลาดเคลื่อนเมื่อสลับหน้าจอ
+   - เมื่อโฟกัสครบเวลา ดอกไม้เบ่งบานสมบูรณ์จะถูกเก็บเกี่ยวไปบันทึกสะสมลงในสวนสถิติ (`GardenStats`)
+
+5. **📧 Security Password Reset via Resend Email Service**:
+   - ระบบขอรหัสยืนยันความปลอดภัย OTP 6 หลัก (อายุ 10 นาที) ส่งตรงไปยังอีเมลผู้ใช้ผ่าน Resend API
+
+6. **📱 Botanical Glassmorphism Responsive UI**:
+   - ดีไซน์กระจกพาสเทลสบายตา พร้อมแถบลอยทรงแคปซูล (Mobile Dock Bar) แสดงผลพอดีขอบจอมือถือ 100%
 
 ---
 
 ## 🛠️ Tech Stack (เทคโนโลยีที่ใช้)
 
-- **Frontend**: React (Vite), Tailwind CSS, Lucide Icons, Recharts
-- **Backend**: Node.js, Express.js, Mongoose (MongoDB Atlas)
-- **Authentication**: JSON Web Token (JWT), Google Auth Library (`@react-oauth/google`)
-- **AI Integration**: `@google/genai` (Google Gemini 2.5 Flash Model)
+- **Frontend**: React.js (Vite), CSS Glassmorphism Design, Lucide Icons, Recharts
+- **Backend**: Node.js, Express.js REST API, Mongoose ODM
+- **Database**: MongoDB Atlas Cloud Database (`focus-space-db`)
+- **Authentication**: JSON Web Token (JWT 7 Days), Google Identity Services OAuth 2.0
+- **External Services**:
+  - **Google Gemini API**: `@google/genai` (Task Analysis)
+  - **Google Calendar API v3**: Event Synchronization
+  - **Resend API**: Email OTP Security Service
 
 ---
 
@@ -30,31 +60,32 @@ Focus Space คือเว็บแอปพลิเคชันบริห�
 ```text
 focus-space/
 ├── backend/                  # Express.js REST API Server
-│   ├── controllers/          # Business logic (AI Advisor)
-│   ├── middleware/           # JWT Auth Middleware
-│   ├── models/               # Mongoose Schemas (User, Task, FocusSession)
-│   ├── routes/               # API Routes (auth, tasks, pomodoro, dashboard)
-│   ├── services/             # External services (Gemini AI service)
-│   ├── server.js             # Main server entrypoint
-│   └── .env.example          # Environment variables template
-├── frontend/                 # React (Vite) Single Page Application
+│   ├── controllers/          # Business logic (aiController.js)
+│   ├── middleware/           # JWT & Auth Middleware (auth.js)
+│   ├── models/               # Mongoose Schemas (User.js, Task.js, FocusSession.js)
+│   ├── routes/               # API Endpoints (auth.js, tasks.js, pomodoro.js, dashboard.js)
+│   ├── services/             # External Integrations (emailService.js, aiService.js)
+│   ├── server.js             # Express App Server Entrypoint
+│   └── render.yaml           # Deployment Configuration for Render Cloud
+├── frontend/                 # React.js Single Page Application
 │   ├── src/
-│   │   ├── components/       # UI Components (TaskList, Dashboard, Pomodoro, AIAdvisor, etc.)
-│   │   ├── context/          # React Context (AuthContext)
-│   │   ├── App.jsx           # Routing & Layout
-│   │   └── main.jsx          # Entrypoint & OAuth Provider
+│   │   ├── components/       # UI Components (Login, TaskList, GardenCalendar, Pomodoro, Dashboard, etc.)
+│   │   ├── context/          # Global State Providers (AuthContext, TaskContext, PomodoroContext)
+│   │   ├── lib/              # API Client & Helpers (api.js, storage.js)
+│   │   ├── App.jsx           # Main Layout & Tab Router
+│   │   └── main.jsx          # Entrypoint & Context Provider Stack
 │   ├── index.html
-│   └── vite.config.js
-└── README.md
+│   └── vite.config.js        # Vite Build Configuration
+└── README.md                 # System Documentation & Overview
 ```
 
 ---
 
-## ⚙️ Installation & Setup (ขั้นตอนการติดตั้งและใช้งาน)
+## ⚙️ Local Development Setup (การติดตั้งสำหรับทดลองรันบนเครื่อง)
 
 ### 1. Clone Repository
 ```bash
-git clone <YOUR_REPOSITORY_URL>
+git clone https://github.com/kanonratwongsapan/focus-space.git
 cd focus-space
 ```
 
@@ -64,19 +95,21 @@ cd backend
 npm install
 ```
 
-สร้างไฟล์ `.env` ในโฟลเดอร์ `backend/` ตามตัวอย่างใน `.env.example`:
+สร้างไฟล์ `.env` ในโฟลเดอร์ `backend/`:
 ```env
 PORT=5000
-MONGODB_URI=your_mongodb_connection_string
+MONGODB_URI=your_mongodb_atlas_connection_string
 JWT_SECRET=your_jwt_secret_key
 GEMINI_API_KEY=your_gemini_api_key
 GOOGLE_CLIENT_ID=your_google_client_id
+RESEND_API_KEY=your_resend_api_key
+ALLOWED_EMAIL_DOMAINS=rmuti.ac.th
+OWNER_EMAILS=kanonrat.wo@rmuti.ac.th,piyanuch.ch@rmuti.ac.th
 ```
 
 เริ่มรัน Backend Server:
 ```bash
 npm start
-# หรือ node server.js
 ```
 
 ### 3. Frontend Setup
@@ -86,7 +119,8 @@ npm install
 npm run dev
 ```
 
-เปิดบราวเซอร์ไปที่: **`http://focus-space.com`** *(หรือ `http://localhost`)*
+เปิดเบราว์เซอร์ไปที่: `http://localhost:5173`
 
-*(หมายเหตุ: สำหรับการเปิดใช้งานผ่านชื่อโดเมนโปรเจกต์ `http://focus-space.com` ให้ตั้งค่าในไฟล์ Windows hosts: `127.0.0.1 focus-space.com`)*
+---
 
+© 2026 Focus Space Project — RMUTI Khon Kaen Campus
