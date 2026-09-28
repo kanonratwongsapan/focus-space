@@ -15,15 +15,15 @@ const WeeklyChart = ({ tasks = [] }) => {
 
   // Compute daily focus minutes dynamically from tasks or standard history
   const getWeeklyData = () => {
-    // Initialize day map
+    // Initialize day map for clean user stats
     const dayStats = {
-      Mon: { minutes: 45, count: 2 },
-      Tue: { minutes: 90, count: 4 },
-      Wed: { minutes: 120, count: 5 },
-      Thu: { minutes: 60, count: 3 },
-      Fri: { minutes: 75, count: 3 },
-      Sat: { minutes: 30, count: 1 },
-      Sun: { minutes: 15, count: 1 },
+      Mon: { minutes: 0, count: 0 },
+      Tue: { minutes: 0, count: 0 },
+      Wed: { minutes: 0, count: 0 },
+      Thu: { minutes: 0, count: 0 },
+      Fri: { minutes: 0, count: 0 },
+      Sat: { minutes: 0, count: 0 },
+      Sun: { minutes: 0, count: 0 },
     };
 
     // Calculate actual task stats
@@ -95,7 +95,11 @@ const WeeklyChart = ({ tasks = [] }) => {
           gap: '6px'
         }}>
           <Sparkles size={15} color="var(--accent-purple)" />
-          <span>วันโฟกัสดีที่สุด: <strong>วัน{bestDayObj.label} ({maxDayMinutes} นาที)</strong> 🎉</span>
+          {totalWeeklyMinutes > 0 ? (
+            <span>วันโฟกัสดีที่สุด: <strong>วัน{bestDayObj.label} ({maxDayMinutes} นาที)</strong> 🎉</span>
+          ) : (
+            <span>เริ่มเพาะปลูกสถิติแรกของคุณสัปดาห์นี้ได้เลยค่ะ 🌸</span>
+          )}
         </div>
       </div>
 
