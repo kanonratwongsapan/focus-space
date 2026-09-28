@@ -75,11 +75,19 @@ export const PomodoroProvider = ({ children }) => {
   const setWorkDuration = (val) => {
     setWorkDurationState(val);
     localStorage.setItem('focus_workDuration', val.toString());
+    if (!isActive && !isBreak) {
+      setMinutes(val);
+      setSeconds(0);
+    }
   };
 
   const setBreakDuration = (val) => {
     setBreakDurationState(val);
     localStorage.setItem('focus_breakDuration', val.toString());
+    if (!isActive && isBreak) {
+      setMinutes(val);
+      setSeconds(0);
+    }
   };
 
   const setSelectedTaskId = (val) => {
@@ -90,21 +98,6 @@ export const PomodoroProvider = ({ children }) => {
       localStorage.removeItem('focus_selectedTaskId');
     }
   };
-
-  // Sync timer display with custom durations when not active
-  useEffect(() => {
-    if (!isActive && !isBreak) {
-      setMinutes(workDuration);
-      setSeconds(0);
-    }
-  }, [workDuration, isActive, isBreak]);
-
-  useEffect(() => {
-    if (!isActive && isBreak) {
-      setMinutes(breakDuration);
-      setSeconds(0);
-    }
-  }, [breakDuration, isActive, isBreak]);
 
   // AudioContext synthesizer sound
   const playAlertSound = (type = 'success') => {
