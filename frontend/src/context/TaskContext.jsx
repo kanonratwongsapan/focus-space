@@ -64,11 +64,11 @@ export const TaskProvider = ({ children }) => {
       reminders: {
         useDefault: false,
         overrides: [
-          { method: 'popup', minutes: 3 * 24 * 60 }, // 📱 3 วันล่วงหน้า (4320 นาที)
-          { method: 'email', minutes: 3 * 24 * 60 }, // 📧 อีเมลล่วงหน้า 3 วัน
-          { method: 'popup', minutes: 1 * 24 * 60 }, // 📱 1 วันล่วงหน้า (1440 นาที)
-          { method: 'email', minutes: 1 * 24 * 60 }, // 📧 อีเมลล่วงหน้า 1 วัน
-          { method: 'popup', minutes: 9 * 60 }        // 📱 เช้าวันส่งงาน (09:00 น.)
+          { method: 'email', minutes: 3 * 24 * 60 }, // 📧 อีเมลล่วงหน้า 3 วัน (4320 นาที)
+          { method: 'popup', minutes: 1 * 24 * 60 }, // 📱 Pop-up ล่วงหน้า 1 วัน (1440 นาที)
+          { method: 'email', minutes: 1 * 24 * 60 }, // 📧 อีเมลล่วงหน้า 1 วัน (1440 นาที)
+          { method: 'popup', minutes: 9 * 60 },      // 📱 Pop-up เช้าวันส่งงาน (09:00 น.)
+          { method: 'email', minutes: 9 * 60 }       // 📧 อีเมลเช้าวันส่งงาน (09:00 น.)
         ]
       }
     };
@@ -123,17 +123,19 @@ export const TaskProvider = ({ children }) => {
 
       if (response.ok) {
         const data = await response.json();
+        const updateBody = { lastSyncedPriority: task.priority };
         if (!task.googleEventId) {
-          await fetch(`${API_URL}/tasks/${task._id}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ googleEventId: data.id })
-          });
-          setTasks(prev => prev.map(t => t._id === task._id ? { ...t, googleEventId: data.id } : t));
+          updateBody.googleEventId = data.id;
         }
+        await fetch(`${API_URL}/tasks/${task._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(updateBody)
+        });
+        setTasks(prev => prev.map(t => t._id === task._id ? { ...t, ...updateBody } : t));
       }
     } catch (err) {
       console.error('Auto sync to Google Calendar failed:', err);
@@ -151,6 +153,18 @@ export const TaskProvider = ({ children }) => {
         const data = await response.json();
         setTasks(data);
         notifyDueTasks(data);
+
+        // Dynamic Calendar Escalation: Auto-sync any priority changes (Low->Medium, Medium->High) to Google Calendar
+        const gToken = localStorage.getItem('g_token') || sessionStorage.getItem('g_token');
+        if (gToken) {
+          for (const t of data) {
+            if (t.googleEventId && !t.completed && t.deadline) {
+              if (t.lastSyncedPriority !== t.priority) {
+                await autoSyncToGoogleCalendar(t, false);
+              }
+            }
+          }
+        }
       }
     } catch (err) {
       console.error('Error fetching tasks:', err);

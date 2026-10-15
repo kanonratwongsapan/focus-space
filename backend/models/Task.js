@@ -65,6 +65,10 @@ const taskSchema = new mongoose.Schema({
   googleEventId: {
     type: String,
     default: ''
+  },
+  lastSyncedPriority: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true
