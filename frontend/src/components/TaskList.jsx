@@ -1608,7 +1608,7 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                 <textarea
                   className="form-input"
                   rows="5"
-                  placeholder="กรอกรายละเอียดงาน หรือก๊อปปี้ข้อความสั่งการบ้านจากอาจารย์มาวางได้เลย ระบบจะรักษาย่อหน้าและขึ้นบรรทัดให้อัตโนมัติค่ะ..."
+                  placeholder="กรอกรายละเอียดงาน..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   style={{ resize: 'vertical', whiteSpace: 'pre-wrap', lineHeight: 1.5, fontFamily: 'inherit' }}
