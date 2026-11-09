@@ -235,6 +235,19 @@ h1, h2, h3, h4 {
   margin-bottom: 1.25rem;
 }
 
+.form-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 520px) {
+  .form-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
 .form-label {
   display: block;
   margin-bottom: 0.5rem;

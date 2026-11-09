@@ -65,7 +65,7 @@ const ThaiDateInput = ({ value, onChange }) => {
         placeholder="วัน/เดือน/ปี (เช่น 12/10/2026)"
         value={textVal}
         onChange={handleTextChange}
-        style={{ paddingRight: '2.5rem', width: '100%', height: '46px' }}
+        style={{ paddingRight: '2.5rem', width: '100%', height: '46px', fontSize: '0.88rem' }}
       />
       <button
         type="button"
@@ -1671,32 +1671,28 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
               </div>
 
               {/* Row 3: Deadline & Google Calendar Reminder */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+              <div className="form-grid-2col">
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">กำหนดส่ง (Deadline)</label>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', height: '24px', marginBottom: '0.5rem', whiteSpace: 'nowrap' }}>
+                    <Calendar size={15} color="var(--primary)" />
+                    <span>กำหนดส่ง (Deadline)</span>
+                  </label>
                   <ThaiDateInput value={deadline} onChange={setDeadline} />
                 </div>
 
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                      <Bell size={14} color="var(--primary)" />
-                      แจ้งเตือน Google Calendar
-                    </span>
-                    {!deadline && (
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 400 }}>
-                        (เมื่อมีเดดไลน์)
-                      </span>
-                    )}
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', height: '24px', marginBottom: '0.5rem', whiteSpace: 'nowrap' }}>
+                    <Bell size={15} color="var(--primary)" />
+                    <span>แจ้งเตือน Google Calendar</span>
                   </label>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
                     <select
                       className="form-input"
                       value={reminderTime}
                       onChange={(e) => setReminderTime(e.target.value)}
                       style={{ 
                         height: '46px', 
-                        fontSize: '0.86rem', 
+                        fontSize: '0.88rem', 
                         cursor: 'pointer',
                         padding: '0 0.85rem',
                         lineHeight: 'normal',
@@ -1718,7 +1714,7 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                         onChange={(e) => setCustomReminderMinutes(Math.max(1, Math.min(40320, Number(e.target.value))))}
                         placeholder="นาที"
                         title="ระบุจำนวนนาทีก่อนกำหนด"
-                        style={{ width: '85px', height: '46px', fontSize: '0.86rem', padding: '0 0.5rem', textAlign: 'center' }}
+                        style={{ width: '85px', height: '46px', fontSize: '0.88rem', padding: '0 0.5rem', textAlign: 'center' }}
                       />
                     )}
                   </div>
@@ -1726,9 +1722,12 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
               </div>
 
               {/* Row 4: Priority & Target Time */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+              <div className="form-grid-2col">
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">ระดับความสำคัญ</label>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', height: '24px', marginBottom: '0.5rem', whiteSpace: 'nowrap' }}>
+                    <Sparkles size={15} color="var(--primary)" />
+                    <span>ระดับความสำคัญ</span>
+                  </label>
                   <div style={{ display: 'flex', gap: '0.5rem', height: '46px' }}>
                     {['Low', 'Medium', 'High'].map((p) => (
                       <button
@@ -1761,7 +1760,10 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                 </div>
 
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">⏱️ เวลาเป้าหมาย (นาที)</label>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', height: '24px', marginBottom: '0.5rem', whiteSpace: 'nowrap' }}>
+                    <Clock size={15} color="var(--primary)" />
+                    <span>เวลาเป้าหมาย (นาที)</span>
+                  </label>
                   <input
                     type="number"
                     className="form-input"
@@ -1769,7 +1771,7 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                     value={targetTime}
                     onChange={(e) => setTargetTime(e.target.value)}
                     min="0"
-                    style={{ height: '46px' }}
+                    style={{ height: '46px', fontSize: '0.88rem' }}
                   />
                 </div>
               </div>
@@ -1878,32 +1880,28 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
               </div>
 
               {/* Row 3: Deadline & Google Calendar Reminder */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+              <div className="form-grid-2col">
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">กำหนดส่ง (Deadline)</label>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', height: '24px', marginBottom: '0.5rem', whiteSpace: 'nowrap' }}>
+                    <Calendar size={15} color="var(--primary)" />
+                    <span>กำหนดส่ง (Deadline)</span>
+                  </label>
                   <ThaiDateInput value={editDeadline} onChange={setEditDeadline} />
                 </div>
 
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                      <Bell size={14} color="var(--primary)" />
-                      แจ้งเตือน Google Calendar
-                    </span>
-                    {!editDeadline && (
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 400 }}>
-                        (เมื่อมีเดดไลน์)
-                      </span>
-                    )}
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', height: '24px', marginBottom: '0.5rem', whiteSpace: 'nowrap' }}>
+                    <Bell size={15} color="var(--primary)" />
+                    <span>แจ้งเตือน Google Calendar</span>
                   </label>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
                     <select
                       className="form-input"
                       value={editReminderTime}
                       onChange={(e) => setEditReminderTime(e.target.value)}
                       style={{ 
                         height: '46px', 
-                        fontSize: '0.86rem', 
+                        fontSize: '0.88rem', 
                         cursor: 'pointer',
                         padding: '0 0.85rem',
                         lineHeight: 'normal',
@@ -1925,7 +1923,7 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                         onChange={(e) => setEditCustomReminderMinutes(Math.max(1, Math.min(40320, Number(e.target.value))))}
                         placeholder="นาที"
                         title="ระบุจำนวนนาทีก่อนกำหนด"
-                        style={{ width: '85px', height: '46px', fontSize: '0.86rem', padding: '0 0.5rem', textAlign: 'center' }}
+                        style={{ width: '85px', height: '46px', fontSize: '0.88rem', padding: '0 0.5rem', textAlign: 'center' }}
                       />
                     )}
                   </div>
@@ -1933,9 +1931,12 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
               </div>
 
               {/* Row 4: Priority & Target Time */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+              <div className="form-grid-2col">
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">ระดับความสำคัญ</label>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', height: '24px', marginBottom: '0.5rem', whiteSpace: 'nowrap' }}>
+                    <Sparkles size={15} color="var(--primary)" />
+                    <span>ระดับความสำคัญ</span>
+                  </label>
                   <div style={{ display: 'flex', gap: '0.5rem', height: '46px' }}>
                     {['Low', 'Medium', 'High'].map((p) => (
                       <button
@@ -1968,7 +1969,10 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                 </div>
 
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">⏱️ เวลาเป้าหมาย (นาที)</label>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', height: '24px', marginBottom: '0.5rem', whiteSpace: 'nowrap' }}>
+                    <Clock size={15} color="var(--primary)" />
+                    <span>เวลาเป้าหมาย (นาที)</span>
+                  </label>
                   <input
                     type="number"
                     className="form-input"
@@ -1976,7 +1980,7 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                     value={editTargetTime}
                     onChange={(e) => setEditTargetTime(e.target.value)}
                     min="0"
-                    style={{ height: '46px' }}
+                    style={{ height: '46px', fontSize: '0.88rem' }}
                   />
                 </div>
               </div>
