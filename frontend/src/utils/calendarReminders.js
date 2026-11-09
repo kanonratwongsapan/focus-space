@@ -1,8 +1,8 @@
 /**
  * Google Calendar API v3 Reminders Helper
  * 
- * Supports flexible reminder presets (5m, 10m, 15m, 30m, 1h, 2h, 1d, 2d, 3d, custom, default)
- * and notification channels ('both', 'popup', 'email').
+ * Supports flexible reminder presets (5m, 10m, 15m, 30m, 1h, 2h, 1d, 2d, 3d, custom, default).
+ * Always notifies via all channels (both Pop-up and Email) per user request.
  * Strictly conforms to Google Calendar API v3 (max 5 overrides, minutes 0 - 40320).
  */
 
@@ -18,12 +18,6 @@ export const REMINDER_PRESETS = [
   { value: '4320', label: '📆 3 วันก่อนกำหนด (72 ชม.)', minutes: 4320 },
   { value: 'default', label: '🌟 เตือน 3 ระยะอัจฉริยะ (3 วัน + 1 วัน + เช้าวันส่งงาน)', minutes: 0 },
   { value: 'custom', label: '✏️ กำหนดเวลานาทีเอง (Custom)', minutes: null }
-];
-
-export const REMINDER_METHODS = [
-  { value: 'both', label: '🔔 + 📧 ทั้งแจ้งเตือนหน้าจอ (Pop-up) และอีเมล (Email)' },
-  { value: 'popup', label: '🔔 แจ้งเตือนหน้าจอ (Pop-up) เท่านั้น' },
-  { value: 'email', label: '📧 ส่งอีเมลแจ้งเตือน (Email) เท่านั้น' }
 ];
 
 /**
@@ -43,13 +37,13 @@ export const getReminderShortLabel = (reminderTime = '1440', customMinutes = 30)
 
 /**
  * Builds standard Google Calendar API v3 reminders object
+ * Always creates overrides for BOTH 'popup' (device) and 'email' (Gmail)
  * @param {Object} task
  * @returns {Object} { useDefault: false, overrides: Array<{ method: string, minutes: number }> }
  */
 export const buildGoogleCalendarReminders = (task = {}) => {
   const reminderTime = String(task.reminderTime || '1440');
   const customReminderMinutes = Number(task.customReminderMinutes) || 30;
-  const reminderMethod = task.reminderMethod || 'both';
 
   // Multi-tier 3-stage default (5 overrides max)
   if (reminderTime === 'default') {
@@ -74,21 +68,12 @@ export const buildGoogleCalendarReminders = (task = {}) => {
     minutes = !isNaN(parsed) && parsed >= 0 ? Math.min(40320, parsed) : 1440;
   }
 
-  const overrides = [];
-  if (reminderMethod === 'both' || reminderMethod === 'popup') {
-    overrides.push({ method: 'popup', minutes });
-  }
-  if (reminderMethod === 'both' || reminderMethod === 'email') {
-    overrides.push({ method: 'email', minutes });
-  }
-
-  // Fallback safe: if empty, at least 1 popup override
-  if (overrides.length === 0) {
-    overrides.push({ method: 'popup', minutes });
-  }
-
+  // Always notify via all channels: device pop-up and email
   return {
     useDefault: false,
-    overrides: overrides.slice(0, 5) // Google API limit is 5
+    overrides: [
+      { method: 'popup', minutes },
+      { method: 'email', minutes }
+    ]
   };
 };

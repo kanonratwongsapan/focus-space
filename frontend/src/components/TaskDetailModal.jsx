@@ -218,7 +218,7 @@ const TaskDetailModal = ({ task, onClose, onEdit, onDelete, onToggleComplete, on
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
                   {getReminderShortLabel(task.reminderTime, task.customReminderMinutes)}
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '6px', fontWeight: 500 }}>
-                    ({task.reminderMethod === 'popup' ? 'Pop-up' : task.reminderMethod === 'email' ? 'Email' : 'Pop-up & Email'})
+                    (เตือนทั้งบนหน้าจอ & อีเมล)
                   </span>
                 </span>
               </div>

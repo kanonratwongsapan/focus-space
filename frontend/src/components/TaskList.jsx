@@ -11,7 +11,6 @@ import {
 import { 
   buildGoogleCalendarReminders, 
   REMINDER_PRESETS, 
-  REMINDER_METHODS, 
   getReminderShortLabel 
 } from '../utils/calendarReminders';
 
@@ -797,7 +796,7 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                     border: '1px solid rgba(139, 92, 246, 0.25)',
                     fontWeight: 600
                   }}
-                  title={`ตั้งเวลาแจ้งเตือน: ${getReminderShortLabel(task.reminderTime, task.customReminderMinutes)} (${task.reminderMethod === 'popup' ? 'Pop-up' : task.reminderMethod === 'email' ? 'Email' : 'Pop-up & Email'})`}
+                  title={`ตั้งเวลาแจ้งเตือน: ${getReminderShortLabel(task.reminderTime, task.customReminderMinutes)} (เตือนทั้งบนหน้าจอ & อีเมล)`}
                 >
                   <Bell size={10} color="#8b5cf6" />
                   {getReminderShortLabel(task.reminderTime, task.customReminderMinutes)}
@@ -1012,7 +1011,7 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                   border: '1px solid rgba(139, 92, 246, 0.25)',
                   fontWeight: 600
                 }}
-                title={`ตั้งเวลาแจ้งเตือน: ${getReminderShortLabel(task.reminderTime, task.customReminderMinutes)} (${task.reminderMethod === 'popup' ? 'Pop-up' : task.reminderMethod === 'email' ? 'Email' : 'Pop-up & Email'})`}
+                title={`ตั้งเวลาแจ้งเตือน: ${getReminderShortLabel(task.reminderTime, task.customReminderMinutes)} (เตือนทั้งบนหน้าจอ & อีเมล)`}
               >
                 <Bell size={10} color="#8b5cf6" />
                 {getReminderShortLabel(task.reminderTime, task.customReminderMinutes)}
@@ -1662,7 +1661,7 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                 <label className="form-label">รายละเอียดงาน (Description) *</label>
                 <textarea
                   className="form-input"
-                  rows="5"
+                  rows="3"
                   placeholder="กรอกรายละเอียดงาน..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -1744,16 +1743,16 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                 background: 'rgba(139, 92, 246, 0.05)',
                 border: '1px solid rgba(139, 92, 246, 0.2)',
                 borderRadius: '16px',
-                padding: '0.9rem 1rem',
+                padding: '0.85rem 1rem',
                 marginBottom: '1.25rem'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.65rem' }}>
-                  <Bell size={15} color="var(--accent-purple)" />
-                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                    🔔 เวลาแจ้งเตือน Google Calendar (Reminder Settings)
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.25rem' }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Bell size={15} color="var(--accent-purple)" />
+                    เวลาแจ้งเตือน Google Calendar (Reminder)
                   </span>
                   {!deadline && (
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                       (จะซิงค์เมื่อระบุกำหนดส่ง)
                     </span>
                   )}
@@ -1761,16 +1760,15 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
 
                 <div style={{ 
                   display: 'grid', 
-                  gridTemplateColumns: reminderTime === 'custom' ? '1.4fr 1fr 1.2fr' : '1.4fr 1.2fr', 
-                  gap: '0.75rem' 
+                  gridTemplateColumns: reminderTime === 'custom' ? '1.4fr 1fr' : '1fr', 
+                  gap: '0.65rem' 
                 }}>
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: '4px' }}>เวลาแจ้งเตือนล่วงหน้า</label>
                     <select
                       className="form-input"
                       value={reminderTime}
                       onChange={(e) => setReminderTime(e.target.value)}
-                      style={{ height: '42px', fontSize: '0.82rem', cursor: 'pointer' }}
+                      style={{ height: '42px', fontSize: '0.84rem', cursor: 'pointer' }}
                     >
                       {REMINDER_PRESETS.map((p) => (
                         <option key={p.value} value={p.value}>{p.label}</option>
@@ -1780,7 +1778,6 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
 
                   {reminderTime === 'custom' && (
                     <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: '4px' }}>ระบุนาที (1-40320)</label>
                       <input
                         type="number"
                         className="form-input"
@@ -1788,25 +1785,15 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                         max="40320"
                         value={customReminderMinutes}
                         onChange={(e) => setCustomReminderMinutes(Math.max(1, Math.min(40320, Number(e.target.value))))}
-                        placeholder="เช่น 45"
-                        style={{ height: '42px', fontSize: '0.82rem' }}
+                        placeholder="ระบุนาทีก่อนกำหนด เช่น 45"
+                        style={{ height: '42px', fontSize: '0.84rem' }}
                       />
                     </div>
                   )}
+                </div>
 
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: '4px' }}>ช่องทางแจ้งเตือน</label>
-                    <select
-                      className="form-input"
-                      value={reminderMethod}
-                      onChange={(e) => setReminderMethod(e.target.value)}
-                      style={{ height: '42px', fontSize: '0.82rem', cursor: 'pointer' }}
-                    >
-                      {REMINDER_METHODS.map((m) => (
-                        <option key={m.value} value={m.value}>{m.label}</option>
-                      ))}
-                    </select>
-                  </div>
+                <div style={{ fontSize: '0.73rem', color: 'var(--text-muted)', marginTop: '0.45rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <span>📱 แจ้งเตือนบนอุปกรณ์ (Pop-up) และ 📧 ส่งอีเมล (Gmail) ให้อัตโนมัติ</span>
                 </div>
               </div>
 
@@ -1886,7 +1873,7 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                 <label className="form-label">รายละเอียดงาน (Description) *</label>
                 <textarea
                   className="form-input"
-                  rows="5"
+                  rows="3"
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   style={{ resize: 'vertical', whiteSpace: 'pre-wrap', lineHeight: 1.5, fontFamily: 'inherit' }}
@@ -1967,16 +1954,16 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                 background: 'rgba(139, 92, 246, 0.05)',
                 border: '1px solid rgba(139, 92, 246, 0.2)',
                 borderRadius: '16px',
-                padding: '0.9rem 1rem',
+                padding: '0.85rem 1rem',
                 marginBottom: '1.25rem'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.65rem' }}>
-                  <Bell size={15} color="var(--accent-purple)" />
-                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                    🔔 เวลาแจ้งเตือน Google Calendar (Reminder Settings)
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.25rem' }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Bell size={15} color="var(--accent-purple)" />
+                    เวลาแจ้งเตือน Google Calendar (Reminder)
                   </span>
                   {!editDeadline && (
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                       (จะซิงค์เมื่อระบุกำหนดส่ง)
                     </span>
                   )}
@@ -1984,16 +1971,15 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
 
                 <div style={{ 
                   display: 'grid', 
-                  gridTemplateColumns: editReminderTime === 'custom' ? '1.4fr 1fr 1.2fr' : '1.4fr 1.2fr', 
-                  gap: '0.75rem' 
+                  gridTemplateColumns: editReminderTime === 'custom' ? '1.4fr 1fr' : '1fr', 
+                  gap: '0.65rem' 
                 }}>
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: '4px' }}>เวลาแจ้งเตือนล่วงหน้า</label>
                     <select
                       className="form-input"
                       value={editReminderTime}
                       onChange={(e) => setEditReminderTime(e.target.value)}
-                      style={{ height: '42px', fontSize: '0.82rem', cursor: 'pointer' }}
+                      style={{ height: '42px', fontSize: '0.84rem', cursor: 'pointer' }}
                     >
                       {REMINDER_PRESETS.map((p) => (
                         <option key={p.value} value={p.value}>{p.label}</option>
@@ -2003,7 +1989,6 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
 
                   {editReminderTime === 'custom' && (
                     <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: '4px' }}>ระบุนาที (1-40320)</label>
                       <input
                         type="number"
                         className="form-input"
@@ -2011,25 +1996,15 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                         max="40320"
                         value={editCustomReminderMinutes}
                         onChange={(e) => setEditCustomReminderMinutes(Math.max(1, Math.min(40320, Number(e.target.value))))}
-                        placeholder="เช่น 45"
-                        style={{ height: '42px', fontSize: '0.82rem' }}
+                        placeholder="ระบุนาทีก่อนกำหนด เช่น 45"
+                        style={{ height: '42px', fontSize: '0.84rem' }}
                       />
                     </div>
                   )}
+                </div>
 
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label" style={{ fontSize: '0.75rem', marginBottom: '4px' }}>ช่องทางแจ้งเตือน</label>
-                    <select
-                      className="form-input"
-                      value={editReminderMethod}
-                      onChange={(e) => setEditReminderMethod(e.target.value)}
-                      style={{ height: '42px', fontSize: '0.82rem', cursor: 'pointer' }}
-                    >
-                      {REMINDER_METHODS.map((m) => (
-                        <option key={m.value} value={m.value}>{m.label}</option>
-                      ))}
-                    </select>
-                  </div>
+                <div style={{ fontSize: '0.73rem', color: 'var(--text-muted)', marginTop: '0.45rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <span>📱 แจ้งเตือนบนอุปกรณ์ (Pop-up) และ 📧 ส่งอีเมล (Gmail) ให้อัตโนมัติ</span>
                 </div>
               </div>
 
