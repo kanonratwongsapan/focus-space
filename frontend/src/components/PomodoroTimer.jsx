@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import Scratchpad from './Scratchpad';
 import BotanicalPlant, { PLANT_SPECIES, getStageFromRatio } from './BotanicalPlant';
+import GuardianPet, { GUARDIAN_SPECIES } from './GuardianPet';
 
 const PomodoroTimer = () => {
   const taskCtx = useContext(TaskContext) || {};
@@ -35,9 +36,16 @@ const PomodoroTimer = () => {
     setBreakSummary = () => {}
   } = pomodoroCtx;
 
-  // Botanical Plant Growth State
+  // Botanical Plant & Mythical Guardian Growth State
   const [selectedFlower, setSelectedFlower] = useState(() => {
     return localStorage.getItem('focus_selectedFlower') || 'sunflower';
+  });
+  const [companionCategory, setCompanionCategory] = useState(() => {
+    const saved = localStorage.getItem('focus_selectedFlower');
+    if (saved && GUARDIAN_SPECIES.some(g => g.id === saved)) {
+      return 'guardians';
+    }
+    return 'plants';
   });
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [taskCompletionSummary, setTaskCompletionSummary] = useState(null);
@@ -104,8 +112,11 @@ const PomodoroTimer = () => {
   const growthRatio = Math.max(0, Math.min(1, 1 - (currentSecs / (totalSecs || 1500))));
   const currentStage = getStageFromRatio(growthRatio);
 
-  const currentPlantData = PLANT_SPECIES.find(p => p.id === selectedFlower) || PLANT_SPECIES[0];
-  const stageDescription = currentPlantData.stageLabels[currentStage - 1];
+  const isGuardian = GUARDIAN_SPECIES.some(g => g.id === selectedFlower);
+  const currentCompanionData = isGuardian 
+    ? (GUARDIAN_SPECIES.find(g => g.id === selectedFlower) || GUARDIAN_SPECIES[0])
+    : (PLANT_SPECIES.find(p => p.id === selectedFlower) || PLANT_SPECIES[0]);
+  const stageDescription = currentCompanionData.stageLabels[currentStage - 1];
 
   const formatTime = (mins, secs) => {
     const m = typeof mins === 'number' && !isNaN(mins) ? mins : 25;
@@ -176,9 +187,9 @@ const PomodoroTimer = () => {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            background: 'rgba(76, 175, 80, 0.25)',
-            border: '1px solid rgba(76, 175, 80, 0.4)',
-            color: '#81c784',
+            background: isGuardian ? 'rgba(2, 132, 199, 0.25)' : 'rgba(76, 175, 80, 0.25)',
+            border: isGuardian ? '1px solid rgba(2, 132, 199, 0.4)' : '1px solid rgba(76, 175, 80, 0.4)',
+            color: isGuardian ? '#38bdf8' : '#81c784',
             padding: '6px 18px',
             borderRadius: '20px',
             fontSize: '0.85rem',
@@ -186,36 +197,48 @@ const PomodoroTimer = () => {
             marginBottom: '1.5rem',
             letterSpacing: '0.5px'
           }}>
-            <Sparkles size={16} color="#81c784" />
-            <span>ZEN FOCUS MODE • โหมดโฟกัสเต็มหน้าจอไร้สิ่งรบกวน 🌸</span>
+            <Sparkles size={16} color={isGuardian ? '#38bdf8' : '#81c784'} />
+            <span>{isGuardian ? '⚔️ GUARDIAN FOCUS MODE • สหายผู้พิทักษ์แห่งสมาธิ' : '🌸 ZEN FOCUS MODE • โหมดโฟกัสเต็มหน้าจอไร้สิ่งรบกวน'}</span>
           </div>
 
-          {/* Plant Name Title */}
+          {/* Plant / Guardian Name Title */}
           <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#e8f5e9', marginBottom: '1rem' }}>
-            {isBreak ? '☕ ช่วงพักผ่อนรดน้ำสวน' : `กำลังปลูก: ${currentPlantData.emoji} ${currentPlantData.name}`}
+            {isBreak ? '☕ ช่วงพักผ่อนรดน้ำสวน' : (isGuardian ? `กำลังฝึกฝน: ${currentCompanionData.emoji} ${currentCompanionData.name}` : `กำลังปลูก: ${currentCompanionData.emoji} ${currentCompanionData.name}`)}
           </h2>
 
-          {/* Giant Botanical Plant Illustration */}
+          {/* Giant Botanical Plant or Guardian Beast Illustration */}
           <div style={{
             margin: '0 auto 1.5rem auto',
             width: '180px',
             height: '180px',
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(27, 67, 50, 0.4) 100%)',
-            border: '3px solid rgba(129, 199, 132, 0.5)',
+            background: isGuardian 
+              ? 'radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%)' 
+              : 'radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(27, 67, 50, 0.4) 100%)',
+            border: isGuardian ? '3px solid rgba(56, 189, 248, 0.5)' : '3px solid rgba(129, 199, 132, 0.5)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 50px rgba(76, 175, 80, 0.35)',
+            boxShadow: isGuardian ? '0 0 50px rgba(2, 132, 199, 0.35)' : '0 0 50px rgba(76, 175, 80, 0.35)',
             animation: isActive ? 'pulse 3s infinite ease-in-out' : 'none'
           }}>
-            <BotanicalPlant 
-              flowerId={selectedFlower} 
-              stage={currentStage} 
-              size={140} 
-              isActive={isActive} 
-              isBreak={isBreak} 
-            />
+            {isGuardian ? (
+              <GuardianPet 
+                guardianId={selectedFlower} 
+                stage={currentStage} 
+                size={140} 
+                isActive={isActive} 
+                isBreak={isBreak} 
+              />
+            ) : (
+              <BotanicalPlant 
+                flowerId={selectedFlower} 
+                stage={currentStage} 
+                size={140} 
+                isActive={isActive} 
+                isBreak={isBreak} 
+              />
+            )}
           </div>
 
           {/* Large Zen Timer Display */}
@@ -423,47 +446,105 @@ const PomodoroTimer = () => {
             </div>
           </div>
 
-          {/* Botanical Plant Species Selector */}
+          {/* Botanical Plant & Guardian Beast Species Selector */}
           <div style={{ marginBottom: '1.1rem', textAlign: 'center' }}>
-            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1b4332', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', marginBottom: '0.4rem' }}>
-              🪴 เลือกพันธุ์ไม้ที่ต้องการปลูก:
-            </span>
+            {/* Category Tabs */}
+            <div style={{ display: 'inline-flex', background: 'rgba(0, 0, 0, 0.04)', padding: '3px', borderRadius: '24px', gap: '4px', marginBottom: '0.65rem' }}>
+              <button
+                type="button"
+                disabled={isActive}
+                onClick={() => {
+                  setCompanionCategory('plants');
+                  if (isGuardian) handleSelectFlower('sunflower');
+                }}
+                style={{
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  padding: '5px 14px',
+                  borderRadius: '20px',
+                  border: 'none',
+                  background: companionCategory === 'plants' ? '#ffffff' : 'transparent',
+                  color: companionCategory === 'plants' ? '#1b4332' : 'var(--text-muted)',
+                  boxShadow: companionCategory === 'plants' ? '0 2px 6px rgba(0, 0, 0, 0.1)' : 'none',
+                  cursor: isActive ? 'not-allowed' : 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <span>🪴 แปลงพฤกษา</span>
+              </button>
+              <button
+                type="button"
+                disabled={isActive}
+                onClick={() => {
+                  setCompanionCategory('guardians');
+                  if (!isGuardian) handleSelectFlower('phoenix');
+                }}
+                style={{
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  padding: '5px 14px',
+                  borderRadius: '20px',
+                  border: 'none',
+                  background: companionCategory === 'guardians' ? '#ffffff' : 'transparent',
+                  color: companionCategory === 'guardians' ? '#0369a1' : 'var(--text-muted)',
+                  boxShadow: companionCategory === 'guardians' ? '0 2px 6px rgba(0, 0, 0, 0.1)' : 'none',
+                  cursor: isActive ? 'not-allowed' : 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <span>⚔️ สัตว์เทพผู้พิทักษ์</span>
+              </button>
+            </div>
+
+            {/* Species Pills */}
             <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              {PLANT_SPECIES.map(flower => (
+              {(companionCategory === 'guardians' ? GUARDIAN_SPECIES : PLANT_SPECIES).map(item => (
                 <button
-                  key={flower.id}
+                  key={item.id}
                   type="button"
-                  onClick={() => handleSelectFlower(flower.id)}
+                  onClick={() => handleSelectFlower(item.id)}
                   disabled={isActive}
                   style={{
                     fontSize: '0.75rem',
                     fontWeight: 700,
                     padding: '5px 10px',
                     borderRadius: '12px',
-                    border: selectedFlower === flower.id ? '2px solid #2e7d32' : '1px solid var(--border-glass)',
-                    background: selectedFlower === flower.id ? 'rgba(76, 175, 80, 0.2)' : 'rgba(255, 255, 255, 0.65)',
-                    color: selectedFlower === flower.id ? '#1b4332' : 'var(--text-muted)',
+                    border: selectedFlower === item.id 
+                      ? (companionCategory === 'guardians' ? '2px solid #0284c7' : '2px solid #2e7d32') 
+                      : '1px solid var(--border-glass)',
+                    background: selectedFlower === item.id 
+                      ? (companionCategory === 'guardians' ? 'rgba(2, 132, 199, 0.18)' : 'rgba(76, 175, 80, 0.2)') 
+                      : 'rgba(255, 255, 255, 0.65)',
+                    color: selectedFlower === item.id 
+                      ? (companionCategory === 'guardians' ? '#0369a1' : '#1b4332') 
+                      : 'var(--text-muted)',
                     cursor: isActive ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px',
-                    boxShadow: selectedFlower === flower.id ? '0 2px 8px rgba(46, 125, 50, 0.2)' : 'none',
+                    boxShadow: selectedFlower === item.id ? '0 2px 8px rgba(0, 0, 0, 0.08)' : 'none',
                     transition: 'var(--transition-smooth)'
                   }}
                 >
-                  <span style={{ fontSize: '0.9rem' }}>{flower.emoji}</span>
-                  <span>{flower.name}</span>
+                  <span style={{ fontSize: '0.9rem' }}>{item.emoji}</span>
+                  <span>{item.name}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Status label with Plant Growing Indicator */}
-          <div style={{ marginBottom: '0.9rem', fontSize: '0.92rem', fontWeight: 700, color: isBreak ? '#10b981' : '#1b4332', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <span>{isBreak ? '☕ ช่วงเวลาพักผ่อนรดน้ำสวน' : (isActive ? `⏳ กำลังโฟกัสปลูก${currentPlantData.name} ${currentPlantData.emoji}` : `🌱 พร้อมเริ่มปลูก${currentPlantData.name} ${currentPlantData.emoji}`)}</span>
+          {/* Status label with Growing / Training Indicator */}
+          <div style={{ marginBottom: '0.9rem', fontSize: '0.92rem', fontWeight: 700, color: isBreak ? '#10b981' : (isGuardian ? '#0284c7' : '#1b4332'), display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <span>{isBreak ? '☕ ช่วงเวลาพักผ่อนรดน้ำสวน' : (isActive ? (isGuardian ? `⏳ กำลังฝึกฝน${currentCompanionData.name} ${currentCompanionData.emoji}` : `⏳ กำลังโฟกัสปลูก${currentCompanionData.name} ${currentCompanionData.emoji}`) : (isGuardian ? `⚔️ พร้อมเริ่มฝึก${currentCompanionData.name} ${currentCompanionData.emoji}` : `🌱 พร้อมเริ่มปลูก${currentCompanionData.name} ${currentCompanionData.emoji}`))}</span>
           </div>
  
-          {/* Botanical Interactive Plant Pot Ring with SVG Illustration */}
+          {/* Interactive Ring with SVG Illustration */}
           <div 
             className="timer-circle" 
             style={{ 
@@ -471,29 +552,39 @@ const PomodoroTimer = () => {
               height: '210px', 
               margin: '0 auto 0.75rem auto',
               borderRadius: '50%',
-              background: 'radial-gradient(circle, #ffffff 30%, #f0fdf4 100%)',
-              border: isBreak ? '4px solid #10b981' : '4px solid #4caf50',
+              background: isGuardian ? 'radial-gradient(circle, #ffffff 30%, #f0f9ff 100%)' : 'radial-gradient(circle, #ffffff 30%, #f0fdf4 100%)',
+              border: isBreak ? '4px solid #10b981' : (isGuardian ? '4px solid #0284c7' : '4px solid #4caf50'),
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 8px 32px rgba(76, 175, 80, 0.18)',
+              boxShadow: isGuardian ? '0 8px 32px rgba(2, 132, 199, 0.18)' : '0 8px 32px rgba(76, 175, 80, 0.18)',
               position: 'relative'
             }}
           >
-            {/* Custom SVG Botanical Plant Growing Illustration */}
+            {/* Custom SVG Illustration */}
             <div style={{ marginTop: '-4px', marginBottom: '6px' }}>
-              <BotanicalPlant 
-                flowerId={selectedFlower} 
-                stage={currentStage} 
-                size={82} 
-                isActive={isActive} 
-                isBreak={isBreak} 
-              />
+              {isGuardian ? (
+                <GuardianPet 
+                  guardianId={selectedFlower} 
+                  stage={currentStage} 
+                  size={82} 
+                  isActive={isActive} 
+                  isBreak={isBreak} 
+                />
+              ) : (
+                <BotanicalPlant 
+                  flowerId={selectedFlower} 
+                  stage={currentStage} 
+                  size={82} 
+                  isActive={isActive} 
+                  isBreak={isBreak} 
+                />
+              )}
             </div>
 
             {/* Timer numbers */}
-            <span className="timer-display" style={{ fontSize: '2.35rem', fontWeight: 800, color: '#1b4332', lineHeight: 1, letterSpacing: '0.5px' }}>
+            <span className="timer-display" style={{ fontSize: '2.35rem', fontWeight: 800, color: isGuardian ? '#0f172a' : '#1b4332', lineHeight: 1, letterSpacing: '0.5px' }}>
               {formatTime(minutes, seconds)}
             </span>
           </div>
@@ -506,14 +597,14 @@ const PomodoroTimer = () => {
               gap: '6px',
               fontSize: '0.82rem', 
               fontWeight: 600, 
-              color: '#2e7d32', 
+              color: isGuardian ? '#0369a1' : '#2e7d32', 
               padding: '5px 14px',
-              background: 'rgba(76, 175, 80, 0.1)',
-              border: '1px solid rgba(76, 175, 80, 0.25)',
+              background: isGuardian ? 'rgba(2, 132, 199, 0.1)' : 'rgba(76, 175, 80, 0.1)',
+              border: isGuardian ? '1px solid rgba(2, 132, 199, 0.25)' : '1px solid rgba(76, 175, 80, 0.25)',
               borderRadius: '20px',
-              boxShadow: '0 2px 6px rgba(46, 125, 50, 0.05)'
+              boxShadow: isGuardian ? '0 2px 6px rgba(2, 132, 199, 0.05)' : '0 2px 6px rgba(46, 125, 50, 0.05)'
             }}>
-              <Sparkles size={14} color="#4caf50" />
+              <Sparkles size={14} color={isGuardian ? '#0284c7' : '#4caf50'} />
               <span>{isBreak ? 'ผ่อนคลายและรดน้ำแปลงพฤกษา 🌿' : stageDescription}</span>
             </span>
           </div>
