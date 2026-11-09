@@ -200,6 +200,17 @@ export const PomodoroProvider = ({ children }) => {
               }
             }
 
+            // Record companion focus history (Plants & Guardians)
+            try {
+              const activeCompanion = localStorage.getItem('focus_selectedFlower') || 'sunflower';
+              const historyStr = localStorage.getItem('focus_companion_history');
+              const history = historyStr ? JSON.parse(historyStr) : {};
+              history[activeCompanion] = (history[activeCompanion] || 0) + 1;
+              localStorage.setItem('focus_companion_history', JSON.stringify(history));
+            } catch (e) {
+              console.error('Companion history error:', e);
+            }
+
             // Display time spent summary popup ALWAYS on screen
             setSessionSummary({
               taskTitle: taskTitle,
