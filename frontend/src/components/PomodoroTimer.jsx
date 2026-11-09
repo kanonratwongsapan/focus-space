@@ -1,8 +1,12 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { TaskContext } from '../context/TaskContext';
 import { PomodoroContext } from '../context/PomodoroContext';
-import { Play, Pause, RotateCcw, AlertCircle, Bell, BellOff, Check, Target, Settings, Sparkles } from 'lucide-react';
+import { 
+  Play, Pause, RotateCcw, AlertCircle, Bell, BellOff, Check, Target, 
+  Settings, Sparkles, Maximize2, Minimize2, X 
+} from 'lucide-react';
 import Scratchpad from './Scratchpad';
+import BotanicalPlant, { PLANT_SPECIES, getStageFromRatio } from './BotanicalPlant';
 
 const PomodoroTimer = () => {
   const taskCtx = useContext(TaskContext) || {};
@@ -32,54 +36,57 @@ const PomodoroTimer = () => {
   } = pomodoroCtx;
 
   // Botanical Plant Growth State
-  const [selectedFlower, setSelectedFlower] = useState('sunflower');
+  const [selectedFlower, setSelectedFlower] = useState(() => {
+    return localStorage.getItem('focus_selectedFlower') || 'sunflower';
+  });
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [taskCompletionSummary, setTaskCompletionSummary] = useState(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
-  const getFlowerEmoji = (flowerId) => {
-    switch (flowerId) {
-      case 'daisy': return '🌼 ดอกเดซี่';
-      case 'tulip': return '🌷 ดอกทิวลิป';
-      case 'sakura': return '🌸 ดอกซากุระ';
-      case 'pine': return '🌲 ต้นสน';
-      default: return '🌻 ดอกทานตะวัน';
+  const handleSelectFlower = (id) => {
+    if (isActive) return;
+    setSelectedFlower(id);
+    localStorage.setItem('focus_selectedFlower', id);
+  };
+
+  // Full Screen Mode handler (Browser Fullscreen API + Fallback)
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen()
+          .then(() => setIsFullScreen(true))
+          .catch(() => setIsFullScreen(true));
+      } else {
+        setIsFullScreen(true);
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen()
+          .then(() => setIsFullScreen(false))
+          .catch(() => setIsFullScreen(false));
+      } else {
+        setIsFullScreen(false);
+      }
     }
   };
 
-  const getPlantStageEmoji = (mins, secs, totalMins, flowerId) => {
-    const m = typeof mins === 'number' && !isNaN(mins) ? mins : 25;
-    const s = typeof secs === 'number' && !isNaN(secs) ? secs : 0;
-    const t = typeof totalMins === 'number' && !isNaN(totalMins) && totalMins > 0 ? totalMins : 25;
-    const totalSecs = t * 60;
-    const currentSecs = m * 60 + s;
-    const ratio = 1 - (currentSecs / (totalSecs || 1500));
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
-    if (ratio <= 0.05) return '🌱'; // Seedling
-    if (ratio <= 0.35) return '🌿'; // Sprouting Leaf
-    if (ratio <= 0.75) return '🌷'; // Budding
-    
-    switch (flowerId) {
-      case 'daisy': return '🌼';
-      case 'tulip': return '🌷';
-      case 'sakura': return '🌸';
-      case 'pine': return '🌲';
-      default: return '🌻';
-    }
-  };
+  // Calculate Growth Stage (1 to 4)
+  const totalMins = isBreak ? breakDuration : workDuration;
+  const totalSecs = (totalMins > 0 ? totalMins : 25) * 60;
+  const currentSecs = (typeof minutes === 'number' ? minutes : 25) * 60 + (typeof seconds === 'number' ? seconds : 0);
+  const growthRatio = Math.max(0, Math.min(1, 1 - (currentSecs / (totalSecs || 1500))));
+  const currentStage = getStageFromRatio(growthRatio);
 
-  const getPlantStageText = (mins, secs, totalMins) => {
-    const m = typeof mins === 'number' && !isNaN(mins) ? mins : 25;
-    const s = typeof secs === 'number' && !isNaN(secs) ? secs : 0;
-    const t = typeof totalMins === 'number' && !isNaN(totalMins) && totalMins > 0 ? totalMins : 25;
-    const totalSecs = t * 60;
-    const currentSecs = m * 60 + s;
-    const ratio = 1 - (currentSecs / (totalSecs || 1500));
-
-    if (ratio <= 0.05) return '🌱 เริ่มหว่านเมล็ดพันธุ์';
-    if (ratio <= 0.35) return '🌿 ต้นกล้าเริ่มแตกใบ';
-    if (ratio <= 0.75) return '🌷 ตาดอกเริ่มก่อตัว';
-    return '🌸 ดอกไม้เบ่งบานสมบูรณ์!';
-  };
+  const currentPlantData = PLANT_SPECIES.find(p => p.id === selectedFlower) || PLANT_SPECIES[0];
+  const stageDescription = currentPlantData.stageLabels[currentStage - 1];
 
   const formatTime = (mins, secs) => {
     const m = typeof mins === 'number' && !isNaN(mins) ? mins : 25;
@@ -95,9 +102,179 @@ const PomodoroTimer = () => {
   };
 
   const pendingTasks = (tasks || []).filter(t => t && !t.completed);
+  const linkedTask = (tasks || []).find(t => t && t._id === selectedTaskId);
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+      
+      {/* FULLSCREEN ZEN FOCUS MODE OVERLAY */}
+      {isFullScreen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 999999,
+          background: 'linear-gradient(135deg, #0d2818 0%, #1b4332 50%, #081c15 100%)',
+          color: '#ffffff',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2rem',
+          textAlign: 'center'
+        }}>
+          {/* Close / Exit Fullscreen Button */}
+          <button
+            type="button"
+            onClick={toggleFullScreen}
+            style={{
+              position: 'absolute',
+              top: '24px',
+              right: '24px',
+              background: 'rgba(255, 255, 255, 0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.25)',
+              color: '#ffffff',
+              borderRadius: '20px',
+              padding: '8px 16px',
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease',
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <X size={16} />
+            <span>ออกจากโหมดเต็มจอ (Esc)</span>
+          </button>
+
+          {/* Top Zen Badge */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'rgba(76, 175, 80, 0.25)',
+            border: '1px solid rgba(76, 175, 80, 0.4)',
+            color: '#81c784',
+            padding: '6px 18px',
+            borderRadius: '20px',
+            fontSize: '0.85rem',
+            fontWeight: 800,
+            marginBottom: '1.5rem',
+            letterSpacing: '0.5px'
+          }}>
+            <Sparkles size={16} color="#81c784" />
+            <span>ZEN FOCUS MODE • โหมดโฟกัสเต็มหน้าจอไร้สิ่งรบกวน 🌸</span>
+          </div>
+
+          {/* Plant Name Title */}
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#e8f5e9', marginBottom: '1rem' }}>
+            {isBreak ? '☕ ช่วงพักผ่อนรดน้ำสวน' : `กำลังปลูก: ${currentPlantData.emoji} ${currentPlantData.name}`}
+          </h2>
+
+          {/* Giant Botanical Plant Illustration */}
+          <div style={{
+            margin: '0 auto 1.5rem auto',
+            width: '180px',
+            height: '180px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(27, 67, 50, 0.4) 100%)',
+            border: '3px solid rgba(129, 199, 132, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 0 50px rgba(76, 175, 80, 0.35)',
+            animation: isActive ? 'pulse 3s infinite ease-in-out' : 'none'
+          }}>
+            <BotanicalPlant 
+              flowerId={selectedFlower} 
+              stage={currentStage} 
+              size={140} 
+              isActive={isActive} 
+              isBreak={isBreak} 
+            />
+          </div>
+
+          {/* Large Zen Timer Display */}
+          <div style={{ fontSize: '4.5rem', fontWeight: 900, fontFamily: 'var(--font-accent)', letterSpacing: '2px', color: '#ffffff', textShadow: '0 0 30px rgba(129, 199, 132, 0.4)', marginBottom: '0.5rem' }}>
+            {formatTime(minutes, seconds)}
+          </div>
+
+          {/* Stage Progression Badge */}
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.12)',
+            border: '1px solid rgba(255, 255, 255, 0.25)',
+            padding: '6px 18px',
+            borderRadius: '20px',
+            fontSize: '0.9rem',
+            fontWeight: 700,
+            color: '#c8e6c9',
+            marginBottom: '2rem'
+          }}>
+            <span>ระยะที่ {currentStage}/4: </span>
+            <span>{isBreak ? 'ผ่อนคลายและรดน้ำแปลงพฤกษา 🌿' : stageDescription}</span>
+          </div>
+
+          {/* Controls */}
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <button
+              type="button"
+              onClick={toggleTimer}
+              style={{
+                background: isActive ? '#f59e0b' : 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '16px',
+                padding: '0.9rem 2.2rem',
+                fontSize: '1.05rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 6px 20px rgba(0, 0, 0, 0.4)'
+              }}
+            >
+              {isActive ? <Pause size={20} /> : <Play size={20} />}
+              <span>{isActive ? 'หยุดชั่วคราว' : 'เริ่มโฟกัส'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={resetTimer}
+              style={{
+                background: 'rgba(255, 255, 255, 0.15)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                color: '#ffffff',
+                borderRadius: '16px',
+                padding: '0.9rem 1.75rem',
+                fontSize: '1rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <RotateCcw size={18} />
+              <span>รีเซ็ต</span>
+            </button>
+          </div>
+
+          {/* Linked Task in Zen Mode */}
+          {linkedTask && (
+            <div style={{ marginTop: '1.5rem', color: '#a7f3d0', fontSize: '0.9rem', fontWeight: 600 }}>
+              🎯 กำลังทำงาน: <strong>"{linkedTask.title}"</strong>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* STANDARD VIEW HEADER */}
       <header style={{ marginBottom: '1.25rem', textAlign: 'center' }}>
         <div style={{
           display: 'inline-flex',
@@ -120,7 +297,7 @@ const PomodoroTimer = () => {
           นาฬิกาปลูกดอกไม้ Pomodoro 🍅🌱
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>
-          เลือกพันธุ์ไม้แล้วเริ่มโฟกัส 25 นาที เพื่อฟูมฟักให้ดอกไม้ของคุณเบ่งบานสมบูรณ์ค่ะ
+          เลือกพันธุ์ไม้แล้วเริ่มโฟกัส 25 นาที โดยแต่ละสายพันธุ์มีวงจรการเติบโตเฉพาะตัวตั้งแต่ต้นอ่อนค่ะ
         </p>
       </header>
 
@@ -167,6 +344,32 @@ const PomodoroTimer = () => {
         {/* Left: Pomodoro Timer Card */}
         <div className="glass pomodoro-container" style={{ padding: '1.75rem 1.5rem', textAlign: 'center' }}>
           
+          {/* Header Action: Fullscreen Focus Mode Button */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+            <button
+              type="button"
+              onClick={toggleFullScreen}
+              style={{
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                padding: '5px 12px',
+                borderRadius: '16px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                color: '#2e7d32',
+                background: 'rgba(76, 175, 80, 0.12)',
+                border: '1px solid rgba(76, 175, 80, 0.3)',
+                cursor: 'pointer',
+                transition: 'var(--transition-smooth)'
+              }}
+              title="เปิดโหมดโฟกัสเต็มหน้าจอเพื่อตัดสิ่งรบกวนรอบข้าง"
+            >
+              <Maximize2 size={13} />
+              <span>🖥️ โหมดเต็มหน้าจอ (Full Screen)</span>
+            </button>
+          </div>
+
           {/* Settings Section */}
           <div className="timer-settings-card" style={{ width: '100%', textAlign: 'left', marginBottom: '1rem' }}>
             <h4 className="timer-settings-title" style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1b4332', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '0.5rem' }}>
@@ -203,52 +406,53 @@ const PomodoroTimer = () => {
           </div>
 
           {/* Botanical Plant Species Selector */}
-          <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.35rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', width: '100%', marginBottom: '2px' }}>
+          <div style={{ marginBottom: '1.1rem', textAlign: 'center' }}>
+            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1b4332', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', marginBottom: '0.4rem' }}>
               🪴 เลือกพันธุ์ไม้ที่ต้องการปลูก:
             </span>
-            {[
-              { id: 'daisy', name: 'เดซี่ 🌼' },
-              { id: 'tulip', name: 'ทิวลิป 🌷' },
-              { id: 'sunflower', name: 'ทานตะวัน 🌻' },
-              { id: 'sakura', name: 'ซากุระ 🌸' },
-              { id: 'pine', name: 'ต้นสน 🌲' }
-            ].map(flower => (
-              <button
-                key={flower.id}
-                type="button"
-                onClick={() => setSelectedFlower(flower.id)}
-                disabled={isActive}
-                style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  padding: '4px 10px',
-                  borderRadius: '12px',
-                  border: selectedFlower === flower.id ? '1px solid #4caf50' : '1px solid var(--border-glass)',
-                  background: selectedFlower === flower.id ? 'rgba(76, 175, 80, 0.2)' : 'rgba(255, 255, 255, 0.5)',
-                  color: selectedFlower === flower.id ? '#2e7d32' : 'var(--text-muted)',
-                  cursor: isActive ? 'not-allowed' : 'pointer',
-                  transition: 'var(--transition-smooth)'
-                }}
-              >
-                {flower.name}
-              </button>
-            ))}
+            <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              {PLANT_SPECIES.map(flower => (
+                <button
+                  key={flower.id}
+                  type="button"
+                  onClick={() => handleSelectFlower(flower.id)}
+                  disabled={isActive}
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    padding: '5px 10px',
+                    borderRadius: '12px',
+                    border: selectedFlower === flower.id ? '2px solid #2e7d32' : '1px solid var(--border-glass)',
+                    background: selectedFlower === flower.id ? 'rgba(76, 175, 80, 0.2)' : 'rgba(255, 255, 255, 0.65)',
+                    color: selectedFlower === flower.id ? '#1b4332' : 'var(--text-muted)',
+                    cursor: isActive ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    boxShadow: selectedFlower === flower.id ? '0 2px 8px rgba(46, 125, 50, 0.2)' : 'none',
+                    transition: 'var(--transition-smooth)'
+                  }}
+                >
+                  <span style={{ fontSize: '0.9rem' }}>{flower.emoji}</span>
+                  <span>{flower.name}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Status label with Plant Growing Indicator */}
-          <h2 style={{ marginBottom: '0.75rem', fontSize: '1.15rem', color: isBreak ? '#10b981' : '#2e7d32', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            {isBreak ? '☕ ช่วงพักผ่อนรดน้ำสวน' : `🎯 กำลังโฟกัสปลูก: ${getFlowerEmoji(selectedFlower)}`}
+          <h2 style={{ marginBottom: '0.65rem', fontSize: '1.05rem', color: isBreak ? '#10b981' : '#2e7d32', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            {isBreak ? '☕ ช่วงพักผ่อนรดน้ำสวน' : `🎯 กำลังโฟกัสปลูก: ${currentPlantData.emoji} ${currentPlantData.name}`}
           </h2>
  
-          {/* Botanical Interactive Plant Pot Ring */}
+          {/* Botanical Interactive Plant Pot Ring with SVG Illustration */}
           <div 
             className="timer-circle" 
             style={{ 
               borderColor: isBreak ? '#10b981' : '#2e7d32', 
-              width: '180px', 
-              height: '180px', 
-              margin: '0 auto 1rem auto',
+              width: '190px', 
+              height: '190px', 
+              margin: '0 auto 0.85rem auto',
               borderRadius: '50%',
               background: 'radial-gradient(circle, #ffffff 0%, #eef7f2 100%)',
               border: '4px solid #4caf50',
@@ -256,20 +460,43 @@ const PomodoroTimer = () => {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 0 30px rgba(76, 175, 80, 0.25)'
+              boxShadow: '0 0 30px rgba(76, 175, 80, 0.25)',
+              position: 'relative'
             }}
           >
-            {/* Animated Growing Plant Stage Emoji */}
-            <div style={{ fontSize: '2rem', animation: isActive ? 'pulse 2s infinite' : 'none', marginBottom: '2px' }}>
-              {isBreak ? '☕' : getPlantStageEmoji(minutes, seconds, workDuration, selectedFlower)}
+            {/* Custom SVG Botanical Plant Growing Illustration */}
+            <div style={{ marginTop: '-4px', marginBottom: '2px' }}>
+              <BotanicalPlant 
+                flowerId={selectedFlower} 
+                stage={currentStage} 
+                size={76} 
+                isActive={isActive} 
+                isBreak={isBreak} 
+              />
             </div>
 
-            <span className="timer-display" style={{ fontSize: '2.2rem', fontWeight: 800, color: '#1b4332' }}>
+            {/* Timer numbers */}
+            <span className="timer-display" style={{ fontSize: '2.1rem', fontWeight: 800, color: '#1b4332', lineHeight: 1 }}>
               {formatTime(minutes, seconds)}
             </span>
 
-            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginTop: '2px' }}>
-              {isBreak ? 'ผ่อนคลายในสวน 🌿' : getPlantStageText(minutes, seconds, workDuration)}
+            {/* Specific Organic Stage Description Badge */}
+            <span style={{ 
+              fontSize: '0.68rem', 
+              fontWeight: 700, 
+              color: '#2e7d32', 
+              marginTop: '4px',
+              maxWidth: '160px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              padding: '1px 6px',
+              background: 'rgba(76, 175, 80, 0.1)',
+              borderRadius: '6px'
+            }}
+            title={stageDescription}
+            >
+              {isBreak ? 'ผ่อนคลายในสวน 🌿' : `ระยะ ${currentStage}/4: ${stageDescription}`}
             </span>
           </div>
  
