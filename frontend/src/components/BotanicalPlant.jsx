@@ -456,26 +456,30 @@ const BotanicalPlant = ({
           </g>
         );
       case 2:
-        // Small conical pine sapling with tiered needles
+        // Small conical pine sapling with tiered curved needles
         return (
           <g>
             {renderPot()}
-            <path d="M 50 78 L 50 50" stroke="#4e342e" strokeWidth="3" strokeLinecap="round" />
-            <path d="M 36 68 L 50 54 L 64 68 Z" fill="#2e7d32" stroke="#1b5e20" strokeWidth="1" />
-            <path d="M 40 56 L 50 44 L 60 56 Z" fill="#388e3c" stroke="#1b5e20" strokeWidth="1" />
-            <path d="M 50 44 L 50 38" stroke="#4caf50" strokeWidth="2" strokeLinecap="round" />
+            <path d="M 50 78 L 50 48" stroke="#5d4037" strokeWidth="3.2" strokeLinecap="round" />
+            <path d="M 32 68 Q 50 60 50 52 Q 50 60 68 68 Q 50 66 32 68 Z" fill="#2e7d32" stroke="#1b5e20" strokeWidth="1" />
+            <path d="M 36 56 Q 50 48 50 40 Q 50 48 64 56 Q 50 54 36 56 Z" fill="#388e3c" stroke="#1b5e20" strokeWidth="1" />
+            <path d="M 50 40 L 50 32" stroke="#4caf50" strokeWidth="2.2" strokeLinecap="round" />
+            <path d="M 50 35 L 46 31" stroke="#66bb6a" strokeWidth="1.4" strokeLinecap="round" />
+            <path d="M 50 35 L 54 31" stroke="#66bb6a" strokeWidth="1.4" strokeLinecap="round" />
           </g>
         );
       case 3:
-        // Denser, 3-tiered pine shrub growing strong
+        // Denser, 3-tiered pine shrub growing strong with curved boughs
         return (
           <g>
             {renderPot()}
-            <path d="M 50 78 L 50 40" stroke="#3e2723" strokeWidth="3.5" strokeLinecap="round" />
-            <path d="M 30 70 L 50 54 L 70 70 Z" fill="#1b5e20" stroke="#0d3b10" strokeWidth="1.2" />
-            <path d="M 34 58 L 50 44 L 66 58 Z" fill="#2e7d32" stroke="#1b5e20" strokeWidth="1.2" />
-            <path d="M 38 46 L 50 32 L 62 46 Z" fill="#388e3c" stroke="#1b5e20" strokeWidth="1.2" />
-            <path d="M 50 32 L 50 24" stroke="#4caf50" strokeWidth="2.2" strokeLinecap="round" />
+            <path d="M 50 78 L 50 36" stroke="#4e342e" strokeWidth="3.8" strokeLinecap="round" />
+            <path d="M 26 70 Q 50 60 50 48 Q 50 60 74 70 Q 50 67 26 70 Z" fill="#1b5e20" stroke="#0d3b10" strokeWidth="1.2" />
+            <path d="M 30 58 Q 50 48 50 38 Q 50 48 70 58 Q 50 55 30 58 Z" fill="#2e7d32" stroke="#1b5e20" strokeWidth="1.2" />
+            <path d="M 35 46 Q 50 36 50 26 Q 50 36 65 46 Q 50 43 35 46 Z" fill="#388e3c" stroke="#1b5e20" strokeWidth="1.2" />
+            <path d="M 50 26 L 50 18" stroke="#4caf50" strokeWidth="2.2" strokeLinecap="round" />
+            <path d="M 50 21 L 46 17" stroke="#66bb6a" strokeWidth="1.4" strokeLinecap="round" />
+            <path d="M 50 21 L 54 17" stroke="#66bb6a" strokeWidth="1.4" strokeLinecap="round" />
           </g>
         );
       default:

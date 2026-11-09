@@ -440,62 +440,62 @@ const PomodoroTimer = () => {
           </div>
 
           {/* Status label with Plant Growing Indicator */}
-          <h2 style={{ marginBottom: '0.65rem', fontSize: '1.05rem', color: isBreak ? '#10b981' : '#2e7d32', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            {isBreak ? '☕ ช่วงพักผ่อนรดน้ำสวน' : `🎯 กำลังโฟกัสปลูก: ${currentPlantData.emoji} ${currentPlantData.name}`}
-          </h2>
+          <div style={{ marginBottom: '0.9rem', fontSize: '0.92rem', fontWeight: 700, color: isBreak ? '#10b981' : '#1b4332', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <span>{isBreak ? '☕ ช่วงเวลาพักผ่อนรดน้ำสวน' : (isActive ? `⏳ กำลังโฟกัสปลูก${currentPlantData.name} ${currentPlantData.emoji}` : `🌱 พร้อมเริ่มปลูก${currentPlantData.name} ${currentPlantData.emoji}`)}</span>
+          </div>
  
           {/* Botanical Interactive Plant Pot Ring with SVG Illustration */}
           <div 
             className="timer-circle" 
             style={{ 
-              borderColor: isBreak ? '#10b981' : '#2e7d32', 
-              width: '190px', 
-              height: '190px', 
-              margin: '0 auto 0.85rem auto',
+              width: '210px', 
+              height: '210px', 
+              margin: '0 auto 0.75rem auto',
               borderRadius: '50%',
-              background: 'radial-gradient(circle, #ffffff 0%, #eef7f2 100%)',
-              border: '4px solid #4caf50',
+              background: 'radial-gradient(circle, #ffffff 30%, #f0fdf4 100%)',
+              border: isBreak ? '4px solid #10b981' : '4px solid #4caf50',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 0 30px rgba(76, 175, 80, 0.25)',
+              boxShadow: '0 8px 32px rgba(76, 175, 80, 0.18)',
               position: 'relative'
             }}
           >
             {/* Custom SVG Botanical Plant Growing Illustration */}
-            <div style={{ marginTop: '-4px', marginBottom: '2px' }}>
+            <div style={{ marginTop: '-4px', marginBottom: '6px' }}>
               <BotanicalPlant 
                 flowerId={selectedFlower} 
                 stage={currentStage} 
-                size={76} 
+                size={82} 
                 isActive={isActive} 
                 isBreak={isBreak} 
               />
             </div>
 
             {/* Timer numbers */}
-            <span className="timer-display" style={{ fontSize: '2.1rem', fontWeight: 800, color: '#1b4332', lineHeight: 1 }}>
+            <span className="timer-display" style={{ fontSize: '2.35rem', fontWeight: 800, color: '#1b4332', lineHeight: 1, letterSpacing: '0.5px' }}>
               {formatTime(minutes, seconds)}
             </span>
+          </div>
 
-            {/* Specific Organic Stage Description Badge */}
+          {/* Specific Organic Stage Description Badge (Clean Pill Outside Circle) */}
+          <div style={{ margin: '0.65rem auto 1.15rem auto', display: 'flex', justifyContent: 'center' }}>
             <span style={{ 
-              fontSize: '0.68rem', 
-              fontWeight: 700, 
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '0.82rem', 
+              fontWeight: 600, 
               color: '#2e7d32', 
-              marginTop: '4px',
-              maxWidth: '160px',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              padding: '1px 6px',
+              padding: '5px 14px',
               background: 'rgba(76, 175, 80, 0.1)',
-              borderRadius: '6px'
-            }}
-            title={stageDescription}
-            >
-              {isBreak ? 'ผ่อนคลายในสวน 🌿' : stageDescription}
+              border: '1px solid rgba(76, 175, 80, 0.25)',
+              borderRadius: '20px',
+              boxShadow: '0 2px 6px rgba(46, 125, 50, 0.05)'
+            }}>
+              <Sparkles size={14} color="#4caf50" />
+              <span>{isBreak ? 'ผ่อนคลายและรดน้ำแปลงพฤกษา 🌿' : stageDescription}</span>
             </span>
           </div>
  
