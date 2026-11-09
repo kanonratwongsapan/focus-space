@@ -7,17 +7,17 @@
  */
 
 export const REMINDER_PRESETS = [
-  { value: '5', label: '⚡ 5 นาทีก่อนกำหนด (5 นาที)', minutes: 5 },
-  { value: '10', label: '⚡ 10 นาทีก่อนกำหนด (10 นาที)', minutes: 10 },
-  { value: '15', label: '⚡ 15 นาทีก่อนกำหนด (15 นาที)', minutes: 15 },
-  { value: '30', label: '⚡ 30 นาทีก่อนกำหนด (30 นาที)', minutes: 30 },
-  { value: '60', label: '⏰ 1 ชั่วโมงก่อนกำหนด (60 นาที)', minutes: 60 },
-  { value: '120', label: '⏰ 2 ชั่วโมงก่อนกำหนด (2 ชม.)', minutes: 120 },
-  { value: '1440', label: '📅 1 วันก่อนกำหนด (24 ชม. - แนะนำ)', minutes: 1440 },
-  { value: '2880', label: '📆 2 วันก่อนกำหนด (48 ชม.)', minutes: 2880 },
-  { value: '4320', label: '📆 3 วันก่อนกำหนด (72 ชม.)', minutes: 4320 },
-  { value: 'default', label: '🌟 เตือน 3 ระยะอัจฉริยะ (3 วัน + 1 วัน + เช้าวันส่งงาน)', minutes: 0 },
-  { value: 'custom', label: '✏️ กำหนดเวลานาทีเอง (Custom)', minutes: null }
+  { value: '5', label: '5 นาทีก่อนกำหนด', minutes: 5 },
+  { value: '10', label: '10 นาทีก่อนกำหนด', minutes: 10 },
+  { value: '15', label: '15 นาทีก่อนกำหนด', minutes: 15 },
+  { value: '30', label: '30 นาทีก่อนกำหนด', minutes: 30 },
+  { value: '60', label: '1 ชั่วโมงก่อนกำหนด', minutes: 60 },
+  { value: '120', label: '2 ชั่วโมงก่อนกำหนด', minutes: 120 },
+  { value: '1440', label: '1 วันก่อนกำหนด (แนะนำ)', minutes: 1440 },
+  { value: '2880', label: '2 วันก่อนกำหนด', minutes: 2880 },
+  { value: '4320', label: '3 วันก่อนกำหนด', minutes: 4320 },
+  { value: 'default', label: 'เตือนหลายระยะ (3 วัน, 1 วัน, วันส่งงาน)', minutes: 0 },
+  { value: 'custom', label: 'กำหนดเวลาเอง (ระบุนาที)...', minutes: null }
 ];
 
 /**
