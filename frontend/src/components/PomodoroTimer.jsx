@@ -215,7 +215,6 @@ const PomodoroTimer = () => {
             color: '#c8e6c9',
             marginBottom: '2rem'
           }}>
-            <span>ระยะที่ {currentStage}/4: </span>
             <span>{isBreak ? 'ผ่อนคลายและรดน้ำแปลงพฤกษา 🌿' : stageDescription}</span>
           </div>
 
@@ -496,7 +495,7 @@ const PomodoroTimer = () => {
             }}
             title={stageDescription}
             >
-              {isBreak ? 'ผ่อนคลายในสวน 🌿' : `ระยะ ${currentStage}/4: ${stageDescription}`}
+              {isBreak ? 'ผ่อนคลายในสวน 🌿' : stageDescription}
             </span>
           </div>
  
