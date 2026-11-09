@@ -49,30 +49,49 @@ const PomodoroTimer = () => {
     localStorage.setItem('focus_selectedFlower', id);
   };
 
-  // Full Screen Mode handler (Browser Fullscreen API + Fallback)
+  // Enter Full Screen Helper (Browser Fullscreen API + CSS Overlay Fallback)
+  const enterFullScreen = () => {
+    setIsFullScreen(true);
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen()
+        .then(() => setIsFullScreen(true))
+        .catch(() => setIsFullScreen(true));
+    }
+  };
+
+  // Exit Full Screen Helper
+  const exitFullScreen = () => {
+    setIsFullScreen(false);
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen()
+        .then(() => setIsFullScreen(false))
+        .catch(() => setIsFullScreen(false));
+    }
+  };
+
+  // Toggle Full Screen Helper (Manual button)
   const toggleFullScreen = () => {
-    if (!document.fullscreenElement) {
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen()
-          .then(() => setIsFullScreen(true))
-          .catch(() => setIsFullScreen(true));
-      } else {
-        setIsFullScreen(true);
-      }
+    if (isFullScreen || document.fullscreenElement) {
+      exitFullScreen();
     } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen()
-          .then(() => setIsFullScreen(false))
-          .catch(() => setIsFullScreen(false));
-      } else {
-        setIsFullScreen(false);
-      }
+      enterFullScreen();
+    }
+  };
+
+  // Start Focus / Toggle Timer with Auto Fullscreen
+  const handleToggleTimer = () => {
+    const willStart = !isActive;
+    toggleTimer();
+    if (willStart) {
+      enterFullScreen();
     }
   };
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullScreen(!!document.fullscreenElement);
+      if (!document.fullscreenElement) {
+        setIsFullScreen(false);
+      }
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
@@ -128,7 +147,7 @@ const PomodoroTimer = () => {
           {/* Close / Exit Fullscreen Button */}
           <button
             type="button"
-            onClick={toggleFullScreen}
+            onClick={exitFullScreen}
             style={{
               position: 'absolute',
               top: '24px',
@@ -222,7 +241,7 @@ const PomodoroTimer = () => {
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             <button
               type="button"
-              onClick={toggleTimer}
+              onClick={handleToggleTimer}
               style={{
                 background: isActive ? '#f59e0b' : 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
                 color: '#ffffff',
@@ -504,7 +523,7 @@ const PomodoroTimer = () => {
             <button 
               type="button"
               className="btn btn-primary" 
-              onClick={toggleTimer}
+              onClick={handleToggleTimer}
               style={{ 
                 background: isActive ? '#d97706' : 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
                 color: 'white',

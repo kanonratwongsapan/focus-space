@@ -370,7 +370,7 @@ function MainAppContent() {
       {/* Global Work Session Completion Overlay Modal */}
       {sessionSummary && (
         <div className="modal-overlay" style={{
-          zIndex: 2000,
+          zIndex: 10000000,
           background: 'rgba(27, 67, 50, 0.45)',
           backdropFilter: 'blur(8px)'
         }}>
@@ -458,7 +458,7 @@ function MainAppContent() {
       {/* Global Break Completion Overlay Modal */}
       {breakSummary && (
         <div className="modal-overlay" style={{
-          zIndex: 2000,
+          zIndex: 10000000,
           background: 'rgba(27, 67, 50, 0.45)',
           backdropFilter: 'blur(8px)'
         }}>
