@@ -74,7 +74,7 @@ const getGradualEscalatedPriority = (currentPriority, deadline, isCompleted) => 
 // Create a new task
 router.post('/', auth, async (req, res) => {
   try {
-    const { title, description, priority, aiPriority, aiReason, isConfirmed, deadline, targetTime, progress, googleEventId, lastSyncedPriority } = req.body;
+    const { title, description, priority, aiPriority, aiReason, isConfirmed, deadline, targetTime, progress, googleEventId, lastSyncedPriority, reminderTime, customReminderMinutes, reminderMethod } = req.body;
 
     if (!title) {
       return res.status(400).json({ message: 'Task title is required.' });
@@ -104,7 +104,10 @@ router.post('/', auth, async (req, res) => {
       targetTime: Number(targetTime) || 0,
       progress: initProgress,
       googleEventId: googleEventId || '',
-      lastSyncedPriority: lastSyncedPriority || ''
+      lastSyncedPriority: lastSyncedPriority || '',
+      reminderTime: reminderTime !== undefined ? String(reminderTime) : '1440',
+      customReminderMinutes: customReminderMinutes !== undefined ? Number(customReminderMinutes) : 30,
+      reminderMethod: reminderMethod || 'both'
     });
 
     const savedTask = await newTask.save();
@@ -160,7 +163,7 @@ router.get('/', auth, async (req, res) => {
 // Update a task (edit content, toggle completion, update pomodoro stats, target time & progress)
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { title, description, priority, isConfirmed, completed, deadline, targetTime, progress, pomodoroCycles, timeSpent, googleEventId, lastSyncedPriority } = req.body;
+    const { title, description, priority, isConfirmed, completed, deadline, targetTime, progress, pomodoroCycles, timeSpent, googleEventId, lastSyncedPriority, reminderTime, customReminderMinutes, reminderMethod } = req.body;
     
     const task = await Task.findOne({ _id: req.params.id, user: req.userId });
     if (!task) {
@@ -175,6 +178,9 @@ router.put('/:id', auth, async (req, res) => {
     if (targetTime !== undefined) task.targetTime = Number(targetTime);
     if (googleEventId !== undefined) task.googleEventId = googleEventId;
     if (lastSyncedPriority !== undefined) task.lastSyncedPriority = lastSyncedPriority;
+    if (reminderTime !== undefined) task.reminderTime = String(reminderTime);
+    if (customReminderMinutes !== undefined) task.customReminderMinutes = Number(customReminderMinutes);
+    if (reminderMethod !== undefined) task.reminderMethod = reminderMethod;
     
     if (progress !== undefined) {
       const progNum = Math.min(100, Math.max(0, Number(progress)));

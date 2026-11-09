@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { AuthContext } from './AuthContext';
 import { API_URL } from '../apiConfig';
+import { buildGoogleCalendarReminders } from '../utils/calendarReminders';
 
 export const TaskContext = createContext();
 
@@ -61,16 +62,7 @@ export const TaskProvider = ({ children }) => {
           return d.toISOString().split('T')[0];
         })()
       },
-      reminders: {
-        useDefault: false,
-        overrides: [
-          { method: 'email', minutes: 3 * 24 * 60 }, // 📧 อีเมลล่วงหน้า 3 วัน (4320 นาที)
-          { method: 'popup', minutes: 1 * 24 * 60 }, // 📱 Pop-up ล่วงหน้า 1 วัน (1440 นาที)
-          { method: 'email', minutes: 1 * 24 * 60 }, // 📧 อีเมลล่วงหน้า 1 วัน (1440 นาที)
-          { method: 'popup', minutes: 9 * 60 },      // 📱 Pop-up เช้าวันส่งงาน (09:00 น.)
-          { method: 'email', minutes: 9 * 60 }       // 📧 อีเมลเช้าวันส่งงาน (09:00 น.)
-        ]
-      }
+      reminders: buildGoogleCalendarReminders(task)
     };
 
     try {

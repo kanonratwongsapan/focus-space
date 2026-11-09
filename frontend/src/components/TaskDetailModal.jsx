@@ -1,9 +1,10 @@
 import React, { useContext } from 'react';
 import { 
   X, Calendar, Edit2, Trash2, Clock, Flame, CheckCircle2, 
-  Tag, Timer, Sparkles, Check, AlertTriangle 
+  Tag, Timer, Sparkles, Check, AlertTriangle, Bell 
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
+import { getReminderShortLabel } from '../utils/calendarReminders';
 
 const TaskDetailModal = ({ task, onClose, onEdit, onDelete, onToggleComplete, onStartPomodoro }) => {
   const { user } = useContext(AuthContext);
@@ -207,6 +208,22 @@ const TaskDetailModal = ({ task, onClose, onEdit, onDelete, onToggleComplete, on
               </span>
             </div>
           </div>
+
+          {/* Google Calendar Reminder Box */}
+          {task.deadline && (
+            <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border-glass)', padding: '0.75rem 1rem', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Bell size={20} color="#8b5cf6" />
+              <div>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', fontWeight: 600 }}>แจ้งเตือน Google Calendar</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                  {getReminderShortLabel(task.reminderTime, task.customReminderMinutes)}
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '6px', fontWeight: 500 }}>
+                    ({task.reminderMethod === 'popup' ? 'Pop-up' : task.reminderMethod === 'email' ? 'Email' : 'Pop-up & Email'})
+                  </span>
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Tags */}

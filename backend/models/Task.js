@@ -69,6 +69,19 @@ const taskSchema = new mongoose.Schema({
   lastSyncedPriority: {
     type: String,
     default: ''
+  },
+  reminderTime: {
+    type: String,
+    default: '1440' // e.g. '5', '10', '15', '30', '60', '1440', '4320', 'default', 'custom'
+  },
+  customReminderMinutes: {
+    type: Number,
+    default: 30
+  },
+  reminderMethod: {
+    type: String,
+    enum: ['both', 'popup', 'email'],
+    default: 'both'
   }
 }, {
   timestamps: true
