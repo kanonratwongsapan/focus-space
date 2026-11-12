@@ -43,7 +43,7 @@ export const PomodoroProvider = ({ children }) => {
     const savedTarget = localStorage.getItem('focus_targetEndTime');
     const savedActive = localStorage.getItem('focus_isActive') === 'true';
     if (savedActive && savedTarget) {
-      const remainingSecs = Math.max(0, Math.floor((parseInt(savedTarget, 10) - Date.now()) / 1000));
+      const remainingSecs = Math.max(0, Math.ceil((parseInt(savedTarget, 10) - Date.now()) / 1000));
       return Math.floor(remainingSecs / 60);
     }
     const savedBreak = localStorage.getItem('focus_isBreak') === 'true';
@@ -56,7 +56,7 @@ export const PomodoroProvider = ({ children }) => {
     const savedTarget = localStorage.getItem('focus_targetEndTime');
     const savedActive = localStorage.getItem('focus_isActive') === 'true';
     if (savedActive && savedTarget) {
-      const remainingSecs = Math.max(0, Math.floor((parseInt(savedTarget, 10) - Date.now()) / 1000));
+      const remainingSecs = Math.max(0, Math.ceil((parseInt(savedTarget, 10) - Date.now()) / 1000));
       return remainingSecs % 60;
     }
     return 0;
@@ -162,15 +162,21 @@ export const PomodoroProvider = ({ children }) => {
     }
   };
 
+  const tasksRef = useRef(tasks);
+  useEffect(() => {
+    tasksRef.current = tasks;
+  }, [tasks]);
+
   // Main countdown effect using timestamp calculation
   useEffect(() => {
     if (isActive && targetEndTime) {
-      intervalRef.current = setInterval(() => {
+      const tick = () => {
         const remainingMs = targetEndTime - Date.now();
-        const totalRemainingSecs = Math.max(0, Math.ceil(remainingMs / 1000));
 
-        if (totalRemainingSecs <= 0) {
-          // Timer Finished!
+        if (remainingMs <= 0) {
+          // Clean 00:00 display before triggering completion
+          setMinutes(0);
+          setSeconds(0);
           setIsActive(false);
           setTargetEndTime(null);
           localStorage.removeItem('focus_targetEndTime');
@@ -187,8 +193,8 @@ export const PomodoroProvider = ({ children }) => {
             setSeconds(0);
             
             let taskTitle = 'รอบโฟกัสทั่วไป';
-            if (selectedTaskId) {
-              const targetTask = tasks.find(t => t._id === selectedTaskId);
+            if (selectedTaskId && tasksRef.current) {
+              const targetTask = tasksRef.current.find(t => t._id === selectedTaskId);
               if (targetTask) {
                 taskTitle = targetTask.title;
                 const updatedCycles = (targetTask.pomodoroCycles || 0) + 1;
@@ -228,16 +234,21 @@ export const PomodoroProvider = ({ children }) => {
             setBreakSummary(true);
           }
         } else {
+          const totalRemainingSecs = Math.ceil(remainingMs / 1000);
           setMinutes(Math.floor(totalRemainingSecs / 60));
           setSeconds(totalRemainingSecs % 60);
         }
-      }, 1000);
+      };
+
+      // Immediate tick to eliminate 1-second start delay
+      tick();
+      intervalRef.current = setInterval(tick, 500);
     } else {
       clearInterval(intervalRef.current);
     }
 
     return () => clearInterval(intervalRef.current);
-  }, [isActive, targetEndTime, isBreak, selectedTaskId, tasks, workDuration, breakDuration]);
+  }, [isActive, targetEndTime, isBreak, selectedTaskId, workDuration, breakDuration]);
 
   const toggleTimer = () => {
     if (!isActive) {
