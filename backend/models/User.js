@@ -39,6 +39,14 @@ const userSchema = new mongoose.Schema({
   resetCodeExpires: {
     type: Date,
     default: null
+  },
+  activeFocusSession: {
+    targetEndTime: { type: Number, default: null },
+    workDuration: { type: Number, default: 25 },
+    breakDuration: { type: Number, default: 5 },
+    isBreak: { type: Boolean, default: false },
+    selectedTaskId: { type: String, default: '' },
+    selectedFlower: { type: String, default: 'sunflower' }
   }
 }, {
   timestamps: true

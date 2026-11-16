@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useRef, useContext } from 'react';
 import { TaskContext } from './TaskContext';
+import { API_URL } from '../apiConfig';
 
 export const PomodoroContext = createContext();
 
@@ -162,6 +163,92 @@ export const PomodoroProvider = ({ children }) => {
     }
   };
 
+  // Cloud Synchronization Helpers (One User, One Focus)
+  const syncSessionToCloud = async (target, wDur, bDur, isBrk, taskId, flower) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      await fetch(`${API_URL}/pomodoro/active-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          targetEndTime: target,
+          workDuration: wDur || 25,
+          breakDuration: bDur || 5,
+          isBreak: !!isBrk,
+          selectedTaskId: taskId || '',
+          selectedFlower: flower || localStorage.getItem('focus_selectedFlower') || 'sunflower'
+        })
+      });
+    } catch (e) {
+      console.warn('Cloud sync error:', e);
+    }
+  };
+
+  const clearCloudSession = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      await fetch(`${API_URL}/pomodoro/active-session`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+    } catch (e) {
+      console.warn('Clear cloud session error:', e);
+    }
+  };
+
+  const fetchCloudSession = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_URL}/pomodoro/active-session`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.activeFocusSession && data.activeFocusSession.targetEndTime) {
+          const cloudSession = data.activeFocusSession;
+          const remainingMs = cloudSession.targetEndTime - Date.now();
+          if (remainingMs > 0) {
+            setTargetEndTime(cloudSession.targetEndTime);
+            setIsActive(true);
+            setIsBreak(!!cloudSession.isBreak);
+            if (cloudSession.workDuration) setWorkDurationState(cloudSession.workDuration);
+            if (cloudSession.breakDuration) setBreakDurationState(cloudSession.breakDuration);
+            if (cloudSession.selectedTaskId) setSelectedTaskIdState(cloudSession.selectedTaskId);
+            if (cloudSession.selectedFlower) localStorage.setItem('focus_selectedFlower', cloudSession.selectedFlower);
+
+            const totalSecs = Math.ceil(remainingMs / 1000);
+            setMinutes(Math.floor(totalSecs / 60));
+            setSeconds(totalSecs % 60);
+
+            localStorage.setItem('focus_targetEndTime', cloudSession.targetEndTime.toString());
+            localStorage.setItem('focus_isActive', 'true');
+            localStorage.setItem('focus_isBreak', cloudSession.isBreak ? 'true' : 'false');
+            if (cloudSession.selectedTaskId) {
+              localStorage.setItem('focus_selectedTaskId', cloudSession.selectedTaskId);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Fetch cloud session error:', e);
+    }
+  };
+
+  // Cross-device sync check on mount
+  useEffect(() => {
+    fetchCloudSession();
+  }, []);
+
   const tasksRef = useRef(tasks);
   useEffect(() => {
     tasksRef.current = tasks;
@@ -182,6 +269,7 @@ export const PomodoroProvider = ({ children }) => {
           localStorage.removeItem('focus_targetEndTime');
           localStorage.setItem('focus_isActive', 'false');
           clearInterval(intervalRef.current);
+          clearCloudSession();
           
           if (!isBreak) {
             // Work finished
@@ -265,6 +353,16 @@ export const PomodoroProvider = ({ children }) => {
       if (selectedTaskId) {
         localStorage.setItem('focus_selectedTaskId', selectedTaskId);
       }
+
+      // Synchronize session to Cloud
+      syncSessionToCloud(
+        newTarget, 
+        workDuration, 
+        breakDuration, 
+        isBreak, 
+        selectedTaskId, 
+        localStorage.getItem('focus_selectedFlower')
+      );
     } else {
       // Pausing timer
       setIsActive(false);
@@ -272,6 +370,7 @@ export const PomodoroProvider = ({ children }) => {
       
       localStorage.setItem('focus_isActive', 'false');
       localStorage.removeItem('focus_targetEndTime');
+      clearCloudSession();
     }
 
     if (notifyPermission === 'default') {
@@ -289,6 +388,20 @@ export const PomodoroProvider = ({ children }) => {
     localStorage.setItem('focus_isActive', 'false');
     localStorage.setItem('focus_isBreak', 'false');
     localStorage.removeItem('focus_targetEndTime');
+    clearCloudSession();
+  };
+
+  const clearLocalTimer = () => {
+    setIsActive(false);
+    setIsBreak(false);
+    setTargetEndTime(null);
+    setMinutes(workDuration);
+    setSeconds(0);
+
+    localStorage.setItem('focus_isActive', 'false');
+    localStorage.setItem('focus_isBreak', 'false');
+    localStorage.removeItem('focus_targetEndTime');
+    clearCloudSession();
   };
 
   return (
@@ -305,6 +418,8 @@ export const PomodoroProvider = ({ children }) => {
       setBreakDuration,
       toggleTimer,
       resetTimer,
+      clearLocalTimer,
+      fetchCloudSession,
       notifyPermission,
       requestNotificationPermission,
       sessionSummary,

@@ -14,16 +14,18 @@ import ProfileModal from './components/ProfileModal';
 import ProfileSettings from './components/ProfileSettings';
 import DeadlineNotifier from './components/DeadlineNotifier';
 import NotificationBell from './components/NotificationBell';
+import CustomModal from './components/CustomModal';
 import { Menu, X, User as UserIcon, Compass, Sparkles, Coffee, Play } from 'lucide-react';
 
 function MainAppContent() {
   const { user, setUser, token, logout, loading } = useContext(AuthContext);
-  const { sessionSummary, setSessionSummary, breakSummary, setBreakSummary, breakDuration } = useContext(PomodoroContext);
+  const { sessionSummary, setSessionSummary, breakSummary, setBreakSummary, breakDuration, isActive, clearLocalTimer } = useContext(PomodoroContext);
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
   if (loading) {
     return (
@@ -314,7 +316,12 @@ function MainAppContent() {
                         <div 
                           onClick={() => {
                             setProfileDropdownOpen(false);
-                            logout();
+                            if (isActive) {
+                              setLogoutConfirmOpen(true);
+                            } else {
+                              if (clearLocalTimer) clearLocalTimer();
+                              logout();
+                            }
                           }}
                           style={{
                             display: 'flex',
@@ -541,6 +548,23 @@ function MainAppContent() {
           </div>
         </div>
       )}
+
+      {/* Logout Confirmation Custom Modal during active timer */}
+      <CustomModal
+        isOpen={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+        onConfirm={() => {
+          setLogoutConfirmOpen(false);
+          if (clearLocalTimer) clearLocalTimer();
+          logout();
+        }}
+        title="ยืนยันการออกจากระบบ"
+        message="คุณกำลังอยู่ในช่วงเวลาโฟกัส หากออกจากระบบ รอบการโฟกัสนี้จะถูกยกเลิก คุณต้องการออกจากระบบใช่หรือไม่?"
+        type="warning"
+        confirmText="ออกจากระบบ"
+        cancelText="โฟกัสต่อ"
+        confirmBg="linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)"
+      />
     </div>
   );
 }

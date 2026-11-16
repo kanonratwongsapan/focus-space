@@ -155,6 +155,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('g_token');
     sessionStorage.removeItem('g_token');
+    localStorage.removeItem('focus_targetEndTime');
+    localStorage.setItem('focus_isActive', 'false');
+    localStorage.setItem('focus_isBreak', 'false');
     setToken(null);
     setUser(null);
   };
