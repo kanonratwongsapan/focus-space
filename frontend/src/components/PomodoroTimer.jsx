@@ -8,6 +8,7 @@ import {
 import Scratchpad from './Scratchpad';
 import BotanicalPlant, { PLANT_SPECIES, getStageFromRatio } from './BotanicalPlant';
 import GuardianPet, { GUARDIAN_SPECIES } from './GuardianPet';
+import CustomModal from './CustomModal';
 
 const PomodoroTimer = () => {
   const taskCtx = useContext(TaskContext) || {};
@@ -50,6 +51,19 @@ const PomodoroTimer = () => {
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [taskCompletionSummary, setTaskCompletionSummary] = useState(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+
+  const handleRequestReset = () => {
+    const currentSecs = (typeof minutes === 'number' ? minutes : 25) * 60 + (typeof seconds === 'number' ? seconds : 0);
+    const totalSecs = (isBreak ? breakDuration : workDuration) * 60;
+    const isSessionInProgress = isActive || (currentSecs > 0 && currentSecs < totalSecs) || localStorage.getItem('focus_isActive') === 'true' || (localStorage.getItem('focus_targetEndTime') && parseInt(localStorage.getItem('focus_targetEndTime'), 10) > Date.now());
+
+    if (isSessionInProgress) {
+      setConfirmCancelOpen(true);
+    } else {
+      resetTimer();
+    }
+  };
 
   const handleSelectFlower = (id) => {
     if (isActive) return;
@@ -155,32 +169,76 @@ const PomodoroTimer = () => {
           padding: '2rem',
           textAlign: 'center'
         }}>
-          {/* Close / Exit Fullscreen Button */}
-          <button
-            type="button"
-            onClick={exitFullScreen}
-            style={{
-              position: 'absolute',
-              top: '24px',
-              right: '24px',
-              background: 'rgba(255, 255, 255, 0.15)',
-              border: '1px solid rgba(255, 255, 255, 0.25)',
-              color: '#ffffff',
-              borderRadius: '20px',
-              padding: '8px 16px',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s ease',
-              backdropFilter: 'blur(10px)'
-            }}
-          >
-            <X size={16} />
-            <span>ออกจากโหมดเต็มจอ (Esc)</span>
-          </button>
+          {/* Top Right Action Controls */}
+          <div style={{
+            position: 'absolute',
+            top: '24px',
+            right: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px'
+          }}>
+            {/* Cancel Focus Button */}
+            <button
+              type="button"
+              onClick={handleRequestReset}
+              style={{
+                background: 'rgba(239, 68, 68, 0.2)',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
+                color: '#fca5a5',
+                borderRadius: '20px',
+                padding: '8px 16px',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease',
+                backdropFilter: 'blur(10px)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.35)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+              }}
+            >
+              <X size={16} />
+              <span>ยกเลิกการโฟกัส</span>
+            </button>
+
+            {/* Minimize / Normal Screen Button */}
+            <button
+              type="button"
+              onClick={exitFullScreen}
+              title="ย่อหน้าต่างกลับสู่โหมดปกติ (เวลานับถอยหลังต่อ)"
+              style={{
+                background: 'rgba(255, 255, 255, 0.15)',
+                border: '1px solid rgba(255, 255, 255, 0.25)',
+                color: '#ffffff',
+                borderRadius: '20px',
+                padding: '8px 16px',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease',
+                backdropFilter: 'blur(10px)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+              }}
+            >
+              <Minimize2 size={16} />
+              <span>ย่อจอปกติ (Esc)</span>
+            </button>
+          </div>
 
           {/* Top Zen Badge */}
           <div style={{
@@ -286,7 +344,7 @@ const PomodoroTimer = () => {
 
             <button
               type="button"
-              onClick={resetTimer}
+              onClick={handleRequestReset}
               style={{
                 background: 'rgba(255, 255, 255, 0.15)',
                 border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -639,7 +697,7 @@ const PomodoroTimer = () => {
             <button 
               type="button"
               className="btn btn-secondary" 
-              onClick={resetTimer}
+              onClick={handleRequestReset}
               style={{
                 background: 'rgba(255, 255, 255, 0.8)',
                 border: '1px solid var(--border-glass)',
@@ -809,6 +867,23 @@ const PomodoroTimer = () => {
       <div style={{ marginTop: '1.5rem', textAlign: 'left' }}>
         <Scratchpad compact={true} />
       </div>
+
+      {/* Cancel Focus Confirmation Custom Modal */}
+      <CustomModal
+        isOpen={confirmCancelOpen}
+        onClose={() => setConfirmCancelOpen(false)}
+        onConfirm={() => {
+          setConfirmCancelOpen(false);
+          resetTimer();
+          exitFullScreen();
+        }}
+        title="ยกเลิกรอบการโฟกัส"
+        message="คุณกำลังอยู่ในช่วงเวลาโฟกัส หากยกเลิกรอบนี้ ความคืบหน้าของรอบนี้จะไม่ถูกบันทึก คุณต้องการยกเลิกใช่หรือไม่?"
+        type="warning"
+        confirmText="ยกเลิกการโฟกัส"
+        cancelText="โฟกัสต่อ"
+        confirmBg="linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)"
+      />
     </div>
   );
 };

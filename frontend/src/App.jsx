@@ -19,7 +19,22 @@ import { Menu, X, User as UserIcon, Compass, Sparkles, Coffee, Play } from 'luci
 
 function MainAppContent() {
   const { user, setUser, token, logout, loading } = useContext(AuthContext);
-  const { sessionSummary, setSessionSummary, breakSummary, setBreakSummary, breakDuration, isActive, clearLocalTimer } = useContext(PomodoroContext);
+  const pomodoroCtx = useContext(PomodoroContext) || {};
+  const { 
+    sessionSummary, 
+    setSessionSummary, 
+    breakSummary, 
+    setBreakSummary, 
+    breakDuration = 5, 
+    workDuration = 25,
+    minutes = 25,
+    seconds = 0,
+    isActive = false, 
+    isBreak = false,
+    targetEndTime = null,
+    hasActiveSession = () => false,
+    clearLocalTimer 
+  } = pomodoroCtx;
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -316,7 +331,13 @@ function MainAppContent() {
                         <div 
                           onClick={() => {
                             setProfileDropdownOpen(false);
-                            if (isActive) {
+                            const isFocusRunning = (typeof hasActiveSession === 'function' && hasActiveSession()) ||
+                              isActive ||
+                              localStorage.getItem('focus_isActive') === 'true' ||
+                              (localStorage.getItem('focus_targetEndTime') && parseInt(localStorage.getItem('focus_targetEndTime'), 10) > Date.now()) ||
+                              ((typeof minutes === 'number' ? minutes : 25) * 60 + (typeof seconds === 'number' ? seconds : 0) < (isBreak ? breakDuration : workDuration) * 60 && ((typeof minutes === 'number' ? minutes : 25) * 60 + (typeof seconds === 'number' ? seconds : 0) > 0));
+
+                            if (isFocusRunning) {
                               setLogoutConfirmOpen(true);
                             } else {
                               if (clearLocalTimer) clearLocalTimer();

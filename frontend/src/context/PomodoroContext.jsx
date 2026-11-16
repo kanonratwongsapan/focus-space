@@ -404,12 +404,26 @@ export const PomodoroProvider = ({ children }) => {
     clearCloudSession();
   };
 
+  const hasActiveSession = () => {
+    if (isActive) return true;
+    const savedActive = localStorage.getItem('focus_isActive') === 'true';
+    const savedTarget = localStorage.getItem('focus_targetEndTime');
+    if (savedTarget && parseInt(savedTarget, 10) > Date.now()) return true;
+    if (savedActive) return true;
+    const totalSecs = (isBreak ? breakDuration : workDuration) * 60;
+    const currentSecs = (typeof minutes === 'number' ? minutes : 25) * 60 + (typeof seconds === 'number' ? seconds : 0);
+    if (currentSecs > 0 && currentSecs < totalSecs) return true;
+    return false;
+  };
+
   return (
     <PomodoroContext.Provider value={{
       minutes,
       seconds,
       isActive,
       isBreak,
+      targetEndTime,
+      hasActiveSession,
       selectedTaskId,
       setSelectedTaskId,
       workDuration,

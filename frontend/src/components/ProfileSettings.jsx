@@ -14,7 +14,18 @@ const AVATARS = [
 
 const ProfileSettings = () => {
   const { user, setUser, token, logout } = useContext(AuthContext);
-  const { isActive, clearLocalTimer } = useContext(PomodoroContext) || {};
+  const pomodoroCtx = useContext(PomodoroContext) || {};
+  const { 
+    isActive = false, 
+    isBreak = false,
+    workDuration = 25,
+    breakDuration = 5,
+    minutes = 25,
+    seconds = 0,
+    targetEndTime = null,
+    hasActiveSession = () => false,
+    clearLocalTimer 
+  } = pomodoroCtx;
 
   const [username, setUsername] = useState(user?.username || '');
   const [profileImage, setProfileImage] = useState(user?.profileImage || '');
@@ -292,7 +303,13 @@ const ProfileSettings = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    if (isActive) {
+                    const isFocusRunning = (typeof hasActiveSession === 'function' && hasActiveSession()) ||
+                      isActive ||
+                      localStorage.getItem('focus_isActive') === 'true' ||
+                      (localStorage.getItem('focus_targetEndTime') && parseInt(localStorage.getItem('focus_targetEndTime'), 10) > Date.now()) ||
+                      ((typeof minutes === 'number' ? minutes : 25) * 60 + (typeof seconds === 'number' ? seconds : 0) < (isBreak ? breakDuration : workDuration) * 60 && ((typeof minutes === 'number' ? minutes : 25) * 60 + (typeof seconds === 'number' ? seconds : 0) > 0));
+
+                    if (isFocusRunning) {
                       setLogoutConfirmOpen(true);
                     } else {
                       if (clearLocalTimer) clearLocalTimer();

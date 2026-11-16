@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { AlertCircle, CheckCircle2, HelpCircle, Info, Sparkles, Trash2, X } from 'lucide-react';
 
 const CustomModal = ({
@@ -12,7 +13,7 @@ const CustomModal = ({
   cancelText = 'ยกเลิก',
   confirmBg = 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)'
 }) => {
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
   const renderIcon = () => {
     switch (type) {
@@ -85,8 +86,8 @@ const CustomModal = ({
     }
   };
 
-  return (
-    <div className="modal-overlay" style={{ zIndex: 9999 }}>
+  return createPortal(
+    <div className="modal-overlay" style={{ zIndex: 10000000 }}>
       <div className="modal-content" style={{
         maxWidth: '420px',
         padding: '2rem 1.75rem',
@@ -171,7 +172,8 @@ const CustomModal = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
