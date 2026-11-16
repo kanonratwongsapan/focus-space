@@ -1,17 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { API_URL } from '../apiConfig';
-import { Sparkles, Calendar, Timer, BrainCircuit, ShieldCheck, CheckCircle2, Award, ArrowRight, Lock, Check } from 'lucide-react';
-
-const FLOWERS_SHOWCASE = [
-  { day: 'จันทร์', name: 'ทานตะวัน', emoji: '🌻', color: '#eab308' },
-  { day: 'อังคาร', name: 'ซากุระ', emoji: '🌸', color: '#ec4899' },
-  { day: 'พุธ (เก่งสุด)', name: 'ทานตะวันราชา', emoji: '👑 🌻', color: '#eab308', special: true },
-  { day: 'พฤหัสบดี', name: 'ทิวลิป', emoji: '🌷', color: '#f43f5e' },
-  { day: 'ศุกร์', name: 'เดซี่', emoji: '🌼', color: '#f59e0b' },
-  { day: 'เสาร์', name: 'กุหลาบ', emoji: '🌹', color: '#e11d48' },
-  { day: 'อาทิตย์', name: 'ต้นกล้า', emoji: '🌱', color: '#10b981' }
-];
+import { Sparkles, Calendar, Timer, BrainCircuit, ShieldCheck, Award, Check } from 'lucide-react';
 
 const Login = () => {
   const { loginWithGoogleOAuth, error, setError } = useContext(AuthContext);
@@ -19,11 +9,6 @@ const Login = () => {
   const [configLoading, setConfigLoading] = useState(true);
   const [configError, setConfigError] = useState(false);
   const [googleClientId, setGoogleClientId] = useState('');
-
-  // Interactive Live Garden Simulator States
-  const [interactiveCount, setInteractiveCount] = useState(18);
-  const [activeFlowerIndex, setActiveFlowerIndex] = useState(2);
-  const [clickEffect, setClickEffect] = useState(false);
 
   useEffect(() => {
     setError(null);
@@ -104,13 +89,6 @@ const Login = () => {
     });
   };
 
-  const handleFlowerClick = (index) => {
-    setActiveFlowerIndex(index);
-    setInteractiveCount(prev => prev + 1);
-    setClickEffect(true);
-    setTimeout(() => setClickEffect(false), 800);
-  };
-
   return (
     <div className="login-page-wrapper">
       <style>{`
@@ -122,7 +100,7 @@ const Login = () => {
           align-items: center;
           justify-content: center;
           background: #fbfdfc;
-          padding: 2.5rem 1.5rem;
+          padding: 2rem 1.5rem;
           color: #1e293b;
           overflow-x: hidden;
           box-sizing: border-box;
@@ -132,36 +110,36 @@ const Login = () => {
         .ambient-orb {
           position: absolute;
           border-radius: 50%;
-          filter: blur(80px);
+          filter: blur(85px);
           pointer-events: none;
           z-index: 1;
         }
         .orb-1 {
-          top: -5%;
-          left: -5%;
-          width: 550px;
-          height: 550px;
-          background: radial-gradient(circle, rgba(187, 247, 208, 0.45) 0%, transparent 70%);
+          top: -6%;
+          left: -6%;
+          width: 580px;
+          height: 580px;
+          background: radial-gradient(circle, rgba(187, 247, 208, 0.5) 0%, transparent 70%);
         }
         .orb-2 {
-          top: -5%;
-          right: -5%;
-          width: 520px;
-          height: 520px;
-          background: radial-gradient(circle, rgba(254, 205, 211, 0.4) 0%, transparent 70%);
+          top: -6%;
+          right: -6%;
+          width: 540px;
+          height: 540px;
+          background: radial-gradient(circle, rgba(254, 205, 211, 0.45) 0%, transparent 70%);
         }
         .orb-3 {
-          bottom: -5%;
-          left: 10%;
-          width: 480px;
-          height: 480px;
-          background: radial-gradient(circle, rgba(254, 240, 138, 0.3) 0%, transparent 70%);
-        }
-        .orb-4 {
-          bottom: -5%;
-          right: 5%;
+          bottom: -6%;
+          left: 12%;
           width: 500px;
           height: 500px;
+          background: radial-gradient(circle, rgba(254, 240, 138, 0.35) 0%, transparent 70%);
+        }
+        .orb-4 {
+          bottom: -6%;
+          right: 6%;
+          width: 520px;
+          height: 520px;
           background: radial-gradient(circle, rgba(199, 210, 254, 0.35) 0%, transparent 70%);
         }
 
@@ -181,7 +159,7 @@ const Login = () => {
           z-index: 10;
           display: grid;
           grid-template-columns: 1.15fr 0.85fr;
-          gap: 3rem;
+          gap: 3.5rem;
           width: 100%;
           max-width: 1160px;
           align-items: center;
@@ -192,6 +170,7 @@ const Login = () => {
             grid-template-columns: 1fr;
             gap: 2.25rem;
             max-width: 520px;
+            padding: 1rem 0;
           }
         }
 
@@ -211,7 +190,7 @@ const Login = () => {
 
         /* Left Hero Showcase */
         .hero-title {
-          font-size: 2.35rem;
+          font-size: 2.45rem;
           font-weight: 800;
           line-height: 1.28;
           color: #1b4332;
@@ -224,66 +203,36 @@ const Login = () => {
           -webkit-text-fill-color: transparent;
         }
 
-        /* Interactive Garden Preview Card */
-        .interactive-garden-card {
-          background: rgba(255, 255, 255, 0.88);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(76, 175, 80, 0.28);
-          border-radius: 24px;
-          padding: 1.25rem 1.4rem;
-          box-shadow: 0 12px 32px rgba(46, 125, 50, 0.08);
-          margin-bottom: 1.25rem;
-          transition: all 0.3s ease;
-        }
-        .interactive-garden-card:hover {
-          border-color: rgba(76, 175, 80, 0.45);
-          box-shadow: 0 16px 40px rgba(46, 125, 50, 0.12);
-        }
-
-        .flower-item-pill {
-          flex: 1;
-          text-align: center;
-          padding: 0.6rem 0.2rem;
-          border-radius: 14px;
-          cursor: pointer;
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-          border: 1.5px solid transparent;
-          background: transparent;
-        }
-        .flower-item-pill:hover {
-          background: rgba(76, 175, 80, 0.1);
-          transform: translateY(-3px);
-        }
-        .flower-item-pill.active {
-          background: rgba(76, 175, 80, 0.16);
-          border-color: #4caf50;
-          box-shadow: 0 4px 14px rgba(76, 175, 80, 0.18);
-          transform: translateY(-3px) scale(1.04);
-        }
-
-        /* 4 Bento Feature Items */
+        /* 4 Rich Bento Feature Items */
         .bento-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 0.85rem;
+          gap: 1rem;
+          margin-top: 1.5rem;
+        }
+        @media (max-width: 600px) {
+          .bento-grid {
+            grid-template-columns: 1fr;
+          }
         }
         .bento-card {
-          background: rgba(255, 255, 255, 0.82);
-          backdrop-filter: blur(15px);
-          border: 1px solid rgba(76, 175, 80, 0.2);
-          border-radius: 18px;
-          padding: 0.85rem 1rem;
+          background: rgba(255, 255, 255, 0.88);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          border: 1px solid rgba(76, 175, 80, 0.22);
+          border-radius: 20px;
+          padding: 1.15rem 1.15rem;
           display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          transition: all 0.25s ease;
+          align-items: flex-start;
+          gap: 0.85rem;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 14px rgba(46, 125, 50, 0.04);
         }
         .bento-card:hover {
           background: #ffffff;
-          border-color: rgba(76, 175, 80, 0.45);
-          transform: translateY(-2px);
-          box-shadow: 0 8px 20px rgba(46, 125, 50, 0.1);
+          border-color: rgba(76, 175, 80, 0.5);
+          transform: translateY(-3px);
+          box-shadow: 0 12px 28px rgba(46, 125, 50, 0.12);
         }
 
         /* Right Side: Premium Glass Login Card */
@@ -291,12 +240,12 @@ const Login = () => {
           background: rgba(255, 255, 255, 0.94);
           backdrop-filter: blur(28px);
           -webkit-backdrop-filter: blur(28px);
-          border: 1.5px solid rgba(255, 255, 255, 0.9);
-          border-radius: 30px;
-          padding: 2.5rem 2.25rem;
+          border: 1.5px solid rgba(255, 255, 255, 0.92);
+          border-radius: 32px;
+          padding: 2.75rem 2.25rem;
           box-shadow: 
-            0 20px 45px -10px rgba(46, 125, 50, 0.12),
-            0 0 0 1px rgba(76, 175, 80, 0.14),
+            0 24px 50px -10px rgba(46, 125, 50, 0.14),
+            0 0 0 1px rgba(76, 175, 80, 0.15),
             0 8px 20px rgba(0, 0, 0, 0.02);
           text-align: center;
         }
@@ -372,7 +321,7 @@ const Login = () => {
       <div className="login-main-container">
         
         {/* ============================================== */}
-        {/* LEFT COLUMN: Hero Presentation & Features      */}
+        {/* LEFT COLUMN: Hero Presentation & 4 Bento Cards */}
         {/* ============================================== */}
         <div style={{ textAlign: 'left' }}>
           
@@ -384,11 +333,11 @@ const Login = () => {
             background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.14) 0%, rgba(244, 114, 182, 0.12) 100%)',
             border: '1px solid rgba(76, 175, 80, 0.32)',
             color: '#2e7d32',
-            padding: '5px 14px',
+            padding: '6px 16px',
             borderRadius: '20px',
-            fontSize: '0.78rem',
+            fontSize: '0.8rem',
             fontWeight: 800,
-            marginBottom: '0.9rem',
+            marginBottom: '1rem',
             boxShadow: '0 2px 10px rgba(76, 175, 80, 0.08)'
           }}>
             <span style={{ display: 'inline-block', width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
@@ -402,127 +351,151 @@ const Login = () => {
           </h1>
 
           {/* Subtitle Description */}
-          <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: 1.6, margin: '0 0 1.25rem 0' }}>
-            เปลี่ยนทุก 25 นาทีของการตั้งใจทำงานให้กลายเป็นดอกไม้และสัตว์เทพผู้พิทักษ์ พร้อมระบบผู้ช่วย AI ช่วยวิเคราะห์งานด่วน และซิงค์เดดไลน์กับ Google Calendar ในคลิกเดียวค่ะ
+          <p style={{ color: '#475569', fontSize: '0.94rem', lineHeight: 1.65, margin: '0 0 1.25rem 0' }}>
+            เปลี่ยนทุก 25 นาทีของการตั้งใจทำงานให้กลายเป็นดอกไม้และสัตว์เทพผู้พิทักษ์ พร้อมระบบ AI ช่วยวิเคราะห์งานด่วน และซิงค์กำหนดส่งงานกับ Google Calendar ในคลิกเดียวค่ะ
           </p>
 
-          {/* Mini Interactive Garden Showcase Card */}
-          <div className="interactive-garden-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.86rem', fontWeight: 800, color: '#1b4332', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                🏡 ตัวอย่างผลผลิตในสวนประจำสัปดาห์
-              </span>
-              <span style={{ 
-                fontSize: '0.74rem', 
-                color: '#15803d', 
-                fontWeight: 800, 
-                background: 'rgba(76, 175, 80, 0.16)', 
-                border: '1px solid rgba(76, 175, 80, 0.25)',
-                padding: '3px 10px', 
-                borderRadius: '12px' 
-              }}>
-                สะสมแล้ว {interactiveCount} ต้น 🐝
-              </span>
-            </div>
-
-            <p style={{ fontSize: '0.73rem', color: '#64748b', margin: '0 0 0.65rem 0' }}>
-              👇 <em>ลองคลิกดอกไม้ของแต่ละวันเพื่อดูดอกไม้เติบโตล่วงหน้าได้เลยค่ะ!</em>
-            </p>
-
-            {/* 7 Days Flower Grid */}
-            <div style={{ 
-              display: 'flex', 
-              gap: '4px',
-              padding: '0.5rem 0.35rem', 
-              background: 'rgba(255, 255, 255, 0.85)', 
-              borderRadius: '16px', 
-              border: '1px solid rgba(76, 175, 80, 0.18)' 
-            }}>
-              {FLOWERS_SHOWCASE.map((item, idx) => (
-                <div 
-                  key={idx}
-                  className={`flower-item-pill ${activeFlowerIndex === idx ? 'active' : ''}`}
-                  onClick={() => handleFlowerClick(idx)}
-                  title={`กดเพื่อรดน้ำ ${item.name}`}
-                >
-                  <div style={{ 
-                    fontSize: '1.4rem', 
-                    transform: activeFlowerIndex === idx ? 'scale(1.15)' : 'scale(1)', 
-                    transition: 'transform 0.2s ease' 
-                  }}>
-                    {item.emoji}
-                  </div>
-                  <span style={{ 
-                    fontSize: '0.62rem', 
-                    fontWeight: 800, 
-                    color: activeFlowerIndex === idx ? '#2e7d32' : '#64748b', 
-                    display: 'block', 
-                    marginTop: '2px',
-                    whiteSpace: 'nowrap'
-                  }}>
-                    {item.day}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Click Toast */}
-            {clickEffect && (
-              <div style={{ 
-                fontSize: '0.76rem', 
-                color: '#15803d', 
-                fontWeight: 800, 
-                textAlign: 'center', 
-                marginTop: '0.45rem', 
-                animation: 'fadeIn 0.25s ease' 
-              }}>
-                ✨ {FLOWERS_SHOWCASE[activeFlowerIndex].name} เบ่งบานแล้ว! +1 ความสำเร็จ 🌸🌱
-              </div>
-            )}
-          </div>
-
-          {/* 4 Bento Feature Highlights Grid */}
+          {/* 4 Rich Bento Feature Cards (แทนที่กล่องเดโมเดิม) */}
           <div className="bento-grid">
+            
+            {/* Card 1: Pomodoro & Growth */}
             <div className="bento-card">
-              <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(76, 175, 80, 0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2e7d32', flexShrink: 0 }}>
-                <Timer size={18} />
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '13px',
+                background: 'rgba(76, 175, 80, 0.16)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#2e7d32',
+                flexShrink: 0,
+                fontSize: '1.35rem'
+              }}>
+                🌸
               </div>
               <div>
-                <h4 style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, color: '#1b4332' }}>ปลูกต้นไม้ Pomodoro</h4>
-                <span style={{ fontSize: '0.68rem', color: '#64748b' }}>โฟกัสเต็มจอ ไร้สิ่งรบกวน</span>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9rem', fontWeight: 800, color: '#1b4332' }}>
+                  ปลูกพฤกษา & สัตว์เทพ Pomodoro
+                </h4>
+                <p style={{ margin: 0, fontSize: '0.74rem', color: '#64748b', lineHeight: 1.45 }}>
+                  โหมดเต็มจอไร้สิ่งรบกวน ฟูมฟักพฤกษาและสัตว์พิทักษ์ 4 ระดับวิวัฒนาการ
+                </p>
               </div>
             </div>
 
+            {/* Card 2: Google Calendar */}
             <div className="bento-card">
-              <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(244, 114, 182, 0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#db2777', flexShrink: 0 }}>
-                <Calendar size={18} />
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '13px',
+                background: 'rgba(244, 114, 182, 0.16)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#db2777',
+                flexShrink: 0,
+                fontSize: '1.35rem'
+              }}>
+                📅
               </div>
               <div>
-                <h4 style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, color: '#1b4332' }}>Google Calendar</h4>
-                <span style={{ fontSize: '0.68rem', color: '#64748b' }}>ซิงค์เดดไลน์อัตโนมัติ</span>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9rem', fontWeight: 800, color: '#1b4332' }}>
+                  เชื่อมต่อ Google Calendar
+                </h4>
+                <p style={{ margin: 0, fontSize: '0.74rem', color: '#64748b', lineHeight: 1.45 }}>
+                  ดึงเดดไลน์จากชั้นเรียนมาจัดตารางสมาธิให้อัตโนมัติ ป้องกันงานตกหล่น
+                </p>
               </div>
             </div>
 
+            {/* Card 3: Gemini AI */}
             <div className="bento-card">
-              <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(168, 85, 247, 0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9333ea', flexShrink: 0 }}>
-                <BrainCircuit size={18} />
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '13px',
+                background: 'rgba(168, 85, 247, 0.16)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#9333ea',
+                flexShrink: 0,
+                fontSize: '1.35rem'
+              }}>
+                ✨
               </div>
               <div>
-                <h4 style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, color: '#1b4332' }}>Gemini AI Priority</h4>
-                <span style={{ fontSize: '0.68rem', color: '#64748b' }}>คัดสรรงานด่วนอัจฉริยะ</span>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9rem', fontWeight: 800, color: '#1b4332' }}>
+                  Gemini AI จัดการงานด่วน
+                </h4>
+                <p style={{ margin: 0, fontSize: '0.74rem', color: '#64748b', lineHeight: 1.45 }}>
+                  ปัญญาประดิษฐ์ช่วยวิเคราะห์ความเร่งด่วนและคัดสรรภารกิจสำคัญก่อนเสมอ
+                </p>
               </div>
             </div>
 
+            {/* Card 4: Hall of Achievements & Stats */}
             <div className="bento-card">
-              <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(14, 165, 233, 0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284c7', flexShrink: 0 }}>
-                <Award size={18} />
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '13px',
+                background: 'rgba(14, 165, 233, 0.16)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#0284c7',
+                flexShrink: 0,
+                fontSize: '1.35rem'
+              }}>
+                🏆
               </div>
               <div>
-                <h4 style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, color: '#1b4332' }}>สหายเทพ & สถิติ</h4>
-                <span style={{ fontSize: '0.68rem', color: '#64748b' }}>ปลดล็อกสัตว์เทพและเกียรติยศ</span>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9rem', fontWeight: 800, color: '#1b4332' }}>
+                  ทำเนียบเกียรติยศชาวสวน
+                </h4>
+                <p style={{ margin: 0, fontSize: '0.74rem', color: '#64748b', lineHeight: 1.45 }}>
+                  สะสมเหรียญตราพาสเทล 4 ระดับ อัปเลเวล XP และติดตามสถิติการเติบโต
+                </p>
               </div>
+            </div>
+
+          </div>
+
+          {/* Institutional Trust Highlight Pill */}
+          <div style={{
+            marginTop: '1.5rem',
+            padding: '0.75rem 1.15rem',
+            background: 'rgba(255, 255, 255, 0.78)',
+            border: '1px solid rgba(76, 175, 80, 0.22)',
+            borderRadius: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1rem',
+              flexShrink: 0,
+              boxShadow: '0 2px 8px rgba(46, 125, 50, 0.25)'
+            }}>
+              🍃
+            </div>
+            <div style={{ fontSize: '0.78rem', color: '#475569', lineHeight: 1.4 }}>
+              <strong>ระบบสารสนเทศระดับสถาบัน:</strong> พัฒนาเพื่อการเรียนรู้และการบริหารเวลาสำหรับนักศึกษา มทร.อีสาน ปลอดภัย 100% ผ่าน Google SSO
             </div>
           </div>
+
         </div>
 
         {/* ============================================== */}
