@@ -351,11 +351,11 @@ const Login = () => {
           </h1>
 
           {/* Subtitle Description */}
-          <p style={{ color: '#475569', fontSize: '0.94rem', lineHeight: 1.65, margin: '0 0 1.25rem 0' }}>
-            เปลี่ยนทุก 25 นาทีของการตั้งใจทำงานให้กลายเป็นดอกไม้และสัตว์เทพผู้พิทักษ์ พร้อมระบบ AI ช่วยวิเคราะห์งานด่วน และซิงค์กำหนดส่งงานกับ Google Calendar ในคลิกเดียวค่ะ
+          <p style={{ color: '#475569', fontSize: '0.95rem', lineHeight: 1.65, margin: '0 0 1.25rem 0' }}>
+            พื้นที่สร้างสมาธิและการเรียนรู้เชิงรุก เปลี่ยนทุก 25 นาทีของการทำงานให้เติบโตเป็นสวนดอกไม้และสัตว์พิทักษ์ พร้อมระบบ AI ช่วยคัดสรรงานด่วนอัจฉริยะ
           </p>
 
-          {/* 4 Rich Bento Feature Cards (แทนที่กล่องเดโมเดิม) */}
+          {/* 4 Rich Bento Feature Cards */}
           <div className="bento-grid">
             
             {/* Card 1: Pomodoro & Growth */}
@@ -464,38 +464,6 @@ const Login = () => {
 
           </div>
 
-          {/* Institutional Trust Highlight Pill */}
-          <div style={{
-            marginTop: '1.5rem',
-            padding: '0.75rem 1.15rem',
-            background: 'rgba(255, 255, 255, 0.78)',
-            border: '1px solid rgba(76, 175, 80, 0.22)',
-            borderRadius: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            backdropFilter: 'blur(10px)'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1rem',
-              flexShrink: 0,
-              boxShadow: '0 2px 8px rgba(46, 125, 50, 0.25)'
-            }}>
-              🍃
-            </div>
-            <div style={{ fontSize: '0.78rem', color: '#475569', lineHeight: 1.4 }}>
-              <strong>ระบบสารสนเทศระดับสถาบัน:</strong> พัฒนาเพื่อการเรียนรู้และการบริหารเวลาสำหรับนักศึกษา มทร.อีสาน ปลอดภัย 100% ผ่าน Google SSO
-            </div>
-          </div>
-
         </div>
 
         {/* ============================================== */}
@@ -567,7 +535,7 @@ const Login = () => {
           )}
 
           {/* Authentic Google Sign-In Button */}
-          <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ marginBottom: '1.25rem' }}>
             <button
               type="button"
               className="btn-google-official"
@@ -595,70 +563,35 @@ const Login = () => {
             </button>
           </div>
 
-          {/* Polished Trust & Features Container */}
+          {/* Minimalist Security & Trust Badge */}
           <div style={{
-            background: 'rgba(76, 175, 80, 0.06)',
-            border: '1px solid rgba(76, 175, 80, 0.22)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            padding: '8px 18px',
             borderRadius: '20px',
-            padding: '1.15rem 1.15rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.85rem'
+            background: 'rgba(76, 175, 80, 0.08)',
+            border: '1px solid rgba(76, 175, 80, 0.22)',
+            color: '#2e7d32',
+            fontSize: '0.8rem',
+            fontWeight: 700
           }}>
-            <div className="trust-feature-row">
-              <div className="trust-icon-pill" style={{ background: 'rgba(76, 175, 80, 0.16)', color: '#2e7d32' }}>
-                <Check size={16} strokeWidth={2.5} />
-              </div>
-              <div>
-                <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#1b4332' }}>
-                  ซิงค์ Google Calendar อัตโนมัติ
-                </div>
-                <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
-                  ดึงเดดไลน์จากชั้นเรียนมาจัดตารางสมาธิให้อัตโนมัติ
-                </div>
-              </div>
-            </div>
-
-            <div className="trust-feature-row">
-              <div className="trust-icon-pill" style={{ background: 'rgba(14, 165, 233, 0.16)', color: '#0284c7' }}>
-                <ShieldCheck size={16} strokeWidth={2.5} />
-              </div>
-              <div>
-                <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#1b4332' }}>
-                  ปลอดภัย 100% ผ่าน Google OAuth
-                </div>
-                <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
-                  ไม่ต้องจำรหัสผ่านใหม่ เข้าใช้งานด้วยอีเมลสถาบันได้อย่างปลอดภัย
-                </div>
-              </div>
-            </div>
-
-            <div className="trust-feature-row">
-              <div className="trust-icon-pill" style={{ background: 'rgba(244, 114, 182, 0.16)', color: '#db2777' }}>
-                <Sparkles size={16} strokeWidth={2.5} />
-              </div>
-              <div>
-                <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#1b4332' }}>
-                  เริ่มต้นสวนสมาธิได้ทันที
-                </div>
-                <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
-                  ระบบจะสร้างโปรไฟล์และสวนสมาธิส่วนตัวให้อัตโนมัติในคลิกเดียว
-                </div>
-              </div>
-            </div>
+            <ShieldCheck size={16} />
+            <span>ปลอดภัย 100% ผ่าน Google SSO สถาบัน</span>
           </div>
 
           {/* Institutional Subtext Footer */}
           <div style={{
-            marginTop: '1.25rem',
-            fontSize: '0.72rem',
+            marginTop: '1.75rem',
+            fontSize: '0.74rem',
             color: '#94a3b8',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '4px'
           }}>
-            <span>🍃 สวนสมาธิเพื่อการเรียนรู้ มหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน</span>
+            <span>🍃 มหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน (RMUTI)</span>
           </div>
 
         </div>
