@@ -1,14 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// Initialize the Gemini API client
-const getGenAI = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
-    console.warn('Warning: GEMINI_API_KEY is not configured or using placeholder.');
-    return null;
-  }
-  return new GoogleGenerativeAI(apiKey);
-};
+import { analyzeTaskWithMultiProvider, fallbackRuleBasedAnalysis as fallbackServiceAnalysis } from '../services/aiService.js';
 
 export const analyzeTaskPriority = async (req, res) => {
   try {
@@ -18,75 +8,10 @@ export const analyzeTaskPriority = async (req, res) => {
       return res.status(400).json({ message: 'Task title is required for analysis.' });
     }
 
-    const genAI = getGenAI();
-    
-    // Get reference dates for relative time parsing
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
-    const todayDayName = today.toLocaleDateString('en-US', { weekday: 'long' });
-
-    if (!genAI) {
-      // Fallback: If no Gemini API Key is provided, use a simple rule-based fallback
-      return fallbackRuleBasedAnalysis(title, description, todayStr, res, '');
-    }
-
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-3.6-flash',
-      generationConfig: { responseMimeType: 'application/json' }
-    });
-
-    const prompt = `
-You are an intelligent task management assistant. Analyze the following task and classify its priority into 'High', 'Medium', or 'Low' based on urgency, importance, deadlines, travel plans, complexity, and educational or business consequences.
-Also, check if the task text (title or description) implies a specific deadline/date in Thai (like 'วันนี้', 'พรุ่งนี้', 'มะรืนนี้', 'อีก 3 วัน', 'วันศุกร์นี้') and translate it into a YYYY-MM-DD date string.
-Today's reference date is: ${todayStr} (which is a ${todayDayName}).
-
-Respond ONLY with a JSON object in this exact format:
-{
-  "priority": "High" | "Medium" | "Low",
-  "reason": "Detailed, professional, and clear explanation in Thai (around 1-3 sentences) analyzing exactly why this priority was assigned, referencing travel plans, academic significance, deadlines, work volume, or consequences if mentioned.",
-  "deadline": "YYYY-MM-DD" or null (if no date is implied in the text)
-}
-
-Guidelines for priority classification:
-- **High**: Urgent deadlines (today, tomorrow, next morning), exams, critical meetings, high-impact tasks (e.g. grading/submitting reports that affect students' graduation, business presentations, travel preparation, or task complexity requiring immediate action, or lack of internet during travel).
-- **Medium**: Regular work, tasks with reasonable timelines, important but not immediate (e.g. "ออกกำลังกายเย็นนี้", "ซื้อของเข้าบ้านสัปดาห์นี้", "ทำสรุปรายงานส่งปลายสัปดาห์").
-- **Low**: Non-urgent chores, leisure activities, games, movies.
-
-Task Details:
-Title: "${title}"
-Description: "${description || 'None'}"
-`;
-
-    // Add 25-second timeout to prevent server hanging while allowing Gemini API enough time to process
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Gemini API Request Timeout (25000ms)')), 25000)
-    );
-
-    const result = await Promise.race([
-      model.generateContent(prompt),
-      timeoutPromise
-    ]);
-
-    const response = await result.response;
-    const text = response.text();
-    
-    let parsedResult;
-    try {
-      parsedResult = JSON.parse(text);
-    } catch (parseError) {
-      console.error('Failed to parse Gemini output:', text);
-      return fallbackRuleBasedAnalysis(title, description, todayStr, res, 'การประมวลผลรูปแบบตอบกลับขัดข้อง');
-    }
-
-    res.json({
-      priority: parsedResult.priority || 'Medium',
-      reason: parsedResult.reason || 'วิเคราะห์ด้วย Gemini AI สำเร็จ',
-      deadline: parsedResult.deadline || null,
-      isAiSuccess: true
-    });
-
+    const result = await analyzeTaskWithMultiProvider(title, description);
+    return res.json(result);
   } catch (err) {
-    console.error('Gemini API Error / Timeout:', err.message);
+    console.error('AI Analysis Controller Error:', err.message);
     const todayStr = new Date().toISOString().split('T')[0];
     return fallbackRuleBasedAnalysis(req.body.title, req.body.description, todayStr, res, '');
   }

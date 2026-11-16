@@ -12,6 +12,7 @@ import GardenCalendar from './components/GardenCalendar';
 import Login from './components/Login';
 import ProfileModal from './components/ProfileModal';
 import ProfileSettings from './components/ProfileSettings';
+import AdminSettings from './components/AdminSettings';
 import DeadlineNotifier from './components/DeadlineNotifier';
 import NotificationBell from './components/NotificationBell';
 import CustomModal from './components/CustomModal';
@@ -121,7 +122,7 @@ function MainAppContent() {
         }}>
           <div className="header-left" style={{ textAlign: 'left' }}>
             <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
-              Focus Space / {currentTab === 'dashboard' ? 'แผงควบคุมหลัก' : currentTab === 'tasks' ? 'รายการภารกิจ' : currentTab === 'pomodoro' ? 'จับเวลาโฟกัส' : currentTab === 'stats' ? 'สถิติสวนความสำเร็จ' : 'สมุดบันทึกในสวน'}
+              Focus Space / {currentTab === 'dashboard' ? 'แผงควบคุมหลัก' : currentTab === 'tasks' ? 'รายการภารกิจ' : currentTab === 'pomodoro' ? 'จับเวลาโฟกัส' : currentTab === 'stats' ? 'สถิติสวนความสำเร็จ' : currentTab === 'calendar' ? 'ปฏิทินพฤกษา' : currentTab === 'journal' ? 'สมุดบันทึกในสวน' : currentTab === 'admin' ? 'ตั้งค่าระบบ AI (Admin)' : 'ตั้งค่าโปรไฟล์'}
             </span>
           </div>
 
@@ -327,6 +328,35 @@ function MainAppContent() {
                           <span>แก้ไขข้อมูลโปรไฟล์</span>
                         </div>
 
+                        {/* Admin Settings Option */}
+                        <div 
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            setCurrentTab('admin');
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            padding: '0.6rem 0.75rem',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            color: '#2e7d32',
+                            fontWeight: 700,
+                            transition: 'var(--transition-smooth)'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(76, 175, 80, 0.1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                          }}
+                        >
+                          <Sparkles size={16} color="#2e7d32" />
+                          <span>ตั้งค่าระบบ AI (Admin)</span>
+                        </div>
+
                         {/* Logout Option */}
                         <div 
                           onClick={() => {
@@ -385,6 +415,7 @@ function MainAppContent() {
         {currentTab === 'stats' && <GardenStats />}
         {currentTab === 'journal' && <GardenJournal />}
         {currentTab === 'profile' && <ProfileSettings />}
+        {currentTab === 'admin' && <AdminSettings />}
       </main>
 
       {/* Profile Editing Modal Dialog */}

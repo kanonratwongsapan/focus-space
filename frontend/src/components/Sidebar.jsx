@@ -250,6 +250,17 @@ const Sidebar = ({ currentTab, setCurrentTab, isOpen, setIsOpen, onOpenProfile }
                 <UserIcon size={18} color="#2e7d32" />
                 <span>ตั้งค่าโปรไฟล์</span>
               </div>
+
+              <div
+                className={`nav-item-pill ${currentTab === 'admin' ? 'active' : ''}`}
+                onClick={() => {
+                  setCurrentTab('admin');
+                  setIsOpen(false);
+                }}
+              >
+                <Sparkles size={18} color="#2e7d32" />
+                <span>ตั้งค่าระบบ AI (Admin)</span>
+              </div>
             </nav>
           </div>
         </div>
@@ -428,6 +439,29 @@ const Sidebar = ({ currentTab, setCurrentTab, isOpen, setIsOpen, onOpenProfile }
                 <div>
                   <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1b4332' }}>โปรไฟล์</div>
                   <div style={{ fontSize: '0.72rem', color: '#64748b' }}>ตั้งค่าบัญชีอวาตาร์</div>
+                </div>
+              </div>
+
+              <div 
+                onClick={() => { setCurrentTab('admin'); setIsMobileMoreOpen(false); }}
+                style={{
+                  padding: '1rem',
+                  borderRadius: '18px',
+                  background: currentTab === 'admin' ? 'rgba(76, 175, 80, 0.15)' : 'rgba(248, 250, 252, 0.8)',
+                  border: currentTab === 'admin' ? '2px solid #4caf50' : '1px solid rgba(76, 175, 80, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  cursor: 'pointer',
+                  gridColumn: 'span 2'
+                }}
+              >
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(76, 175, 80, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2e7d32' }}>
+                  <Sparkles size={20} />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1b4332' }}>ระบบจัดการ AI (Admin)</div>
+                  <div style={{ fontSize: '0.72rem', color: '#64748b' }}>สลับโมเดล Gemini / OpenAI / OpenRouter</div>
                 </div>
               </div>
             </div>
