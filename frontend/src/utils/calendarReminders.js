@@ -77,3 +77,49 @@ export const buildGoogleCalendarReminders = (task = {}) => {
     ]
   };
 };
+
+/**
+ * Accurately extracts YYYY-MM-DD in Thailand Timezone (Asia/Bangkok, UTC+7)
+ * Prevents 1-day early shift caused by UTC conversion on midnight local deadlines.
+ * @param {string|Date} deadlineInput
+ * @returns {string} YYYY-MM-DD
+ */
+export const getBangkokCalendarDate = (deadlineInput) => {
+  if (!deadlineInput) return '';
+  if (typeof deadlineInput === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(deadlineInput.trim())) {
+    return deadlineInput.trim();
+  }
+  const d = new Date(deadlineInput);
+  if (isNaN(d.getTime())) return '';
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(d);
+  } catch {
+    const bkk = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+    const y = bkk.getUTCFullYear();
+    const m = String(bkk.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(bkk.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+};
+
+/**
+ * Calculates exclusive end-date (startDate + 1 day) for Google Calendar all-day events
+ * @param {string} dateStr YYYY-MM-DD
+ * @returns {string} YYYY-MM-DD
+ */
+export const getBangkokCalendarNextDay = (dateStr) => {
+  if (!dateStr) return '';
+  try {
+    const parts = dateStr.split('-').map(Number);
+    if (parts.length !== 3) return '';
+    const [y, m, d] = parts;
+    const nextDate = new Date(Date.UTC(y, m - 1, d + 1));
+    const ny = nextDate.getUTCFullYear();
+    const nm = String(nextDate.getUTCMonth() + 1).padStart(2, '0');
+    const nd = String(nextDate.getUTCDate()).padStart(2, '0');
+    return `${ny}-${nm}-${nd}`;
+  } catch {
+    return dateStr;
+  }
+};
+

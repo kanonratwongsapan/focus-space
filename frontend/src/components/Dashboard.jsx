@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import { Award, Clock, ListTodo, Flame, CheckCircle, BarChart3, Check, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import WeeklyChart from './WeeklyChart';
 import Scratchpad from './Scratchpad';
+import { getBangkokCalendarDate } from '../utils/calendarReminders';
 
 const Dashboard = ({ searchQuery, setCurrentTab }) => {
   const { stats, fetchStats, tasks, fetchTasks, updateTask } = useContext(TaskContext);
@@ -21,10 +22,10 @@ const Dashboard = ({ searchQuery, setCurrentTab }) => {
   }, []);
 
   // Today's Focus Spotlight Task selection with Carousel List
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getBangkokCalendarDate(new Date());
   const pendingTasksList = tasks?.filter(t => !t.completed) || [];
   const urgentTasksList = pendingTasksList.filter(t => 
-    (t.deadline && t.deadline.split('T')[0] === todayStr) || t.priority === 'High'
+    (t.deadline && getBangkokCalendarDate(t.deadline) === todayStr) || t.priority === 'High'
   );
   const activeFocusList = urgentTasksList.length > 0 ? urgentTasksList : pendingTasksList;
   const safeIdx = Math.min(spotlightIdx, Math.max(0, activeFocusList.length - 1));

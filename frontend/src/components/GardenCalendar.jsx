@@ -3,6 +3,7 @@ import { TaskContext } from '../context/TaskContext';
 import { AuthContext } from '../context/AuthContext';
 import { PomodoroContext } from '../context/PomodoroContext';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Sparkles, Clock, CheckCircle2, AlertCircle, ExternalLink, RefreshCw } from 'lucide-react';
+import { getBangkokCalendarDate } from '../utils/calendarReminders';
 
 const ThaiMonths = [
   'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
@@ -153,7 +154,7 @@ const GardenCalendar = ({ setCurrentTab }) => {
     if (!tasks) return [];
     return tasks.filter(t => {
       if (!t.deadline) return false;
-      const taskDate = new Date(t.deadline).toISOString().split('T')[0];
+      const taskDate = getBangkokCalendarDate(t.deadline);
       return taskDate === dateStr;
     });
   };
@@ -162,7 +163,7 @@ const GardenCalendar = ({ setCurrentTab }) => {
   const getGoogleEventsForDate = (dateStr) => {
     if (!googleEvents) return [];
     return googleEvents.filter(e => {
-      const startStr = e.start?.date || e.start?.dateTime?.split('T')[0];
+      const startStr = e.start?.date || getBangkokCalendarDate(e.start?.dateTime);
       return startStr === dateStr;
     });
   };

@@ -11,13 +11,15 @@ import {
 import { 
   buildGoogleCalendarReminders, 
   REMINDER_PRESETS, 
-  getReminderShortLabel 
+  getReminderShortLabel,
+  getBangkokCalendarDate,
+  getBangkokCalendarNextDay
 } from '../utils/calendarReminders';
 
 const ThaiDateInput = ({ value, onChange }) => {
   const toDisplayFormat = (val) => {
     if (!val) return '';
-    const dateOnly = val.split('T')[0];
+    const dateOnly = getBangkokCalendarDate(val) || val.split('T')[0];
     const parts = dateOnly.split('-');
     if (parts.length === 3) {
       return `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -260,18 +262,17 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
     const priorityEmoji = task.priority === 'High' ? '🚨' : task.priority === 'Medium' ? '📌' : '🌱';
     const priorityLabel = task.priority === 'High' ? '[ด่วนมาก]' : task.priority === 'Medium' ? '[ปานกลาง]' : '[ทั่วไป]';
 
+    const startDateStr = getBangkokCalendarDate(task.deadline);
+    const endDateStr = getBangkokCalendarNextDay(startDateStr);
+
     const eventData = {
       summary: `${priorityEmoji} ${priorityLabel} ${task.title}`,
       description: `${task.description || 'สร้างจากระบบจัดการงานอัจฉริยะ Focus Space'}\n\n---\n🌱 โฟกัสและติดตามงานนี้ต่อได้ในระบบ Focus Space`,
       start: {
-        date: new Date(task.deadline).toISOString().split('T')[0]
+        date: startDateStr
       },
       end: {
-        date: (() => {
-          const d = new Date(task.deadline);
-          d.setDate(d.getDate() + 1); // exclusive end date for all-day event
-          return d.toISOString().split('T')[0];
-        })()
+        date: endDateStr
       },
       reminders: buildGoogleCalendarReminders(task)
     };

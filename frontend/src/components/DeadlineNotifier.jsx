@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { TaskContext } from '../context/TaskContext';
 import { Bell, Flame, Clock, Play, X, ShieldAlert } from 'lucide-react';
+import { getBangkokCalendarDate } from '../utils/calendarReminders';
 
 const DeadlineNotifier = ({ setCurrentTab }) => {
   const { tasks } = useContext(TaskContext);
@@ -55,7 +56,7 @@ const DeadlineNotifier = ({ setCurrentTab }) => {
         // Also trigger native browser notification if granted
         if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
           const lastNotifiedKey = `notified_task_${urgentTask._id}`;
-          const todayStr = new Date().toISOString().split('T')[0];
+          const todayStr = getBangkokCalendarDate(new Date());
           if (localStorage.getItem(lastNotifiedKey) !== todayStr) {
             new Notification(`🔥 แจ้งเตือนเดดไลน์สำคัญ: ${urgentTask.title}`, {
               body: `งานนี้ถึงกำหนดส่งเร็วๆ นี้! อย่าลืมสลับไปโฟกัสทำงานนะคะ`,

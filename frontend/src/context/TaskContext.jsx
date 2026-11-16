@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { AuthContext } from './AuthContext';
 import { API_URL } from '../apiConfig';
-import { buildGoogleCalendarReminders } from '../utils/calendarReminders';
+import { buildGoogleCalendarReminders, getBangkokCalendarDate, getBangkokCalendarNextDay } from '../utils/calendarReminders';
 
 export const TaskContext = createContext();
 
@@ -23,12 +23,12 @@ export const TaskProvider = ({ children }) => {
     if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
     
     const lastNotified = localStorage.getItem('last_deadline_notification_date');
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getBangkokCalendarDate(new Date());
     if (lastNotified === todayStr) return;
 
     const dueTodayTasks = loadedTasks.filter(t => {
       if (t.completed || !t.deadline) return false;
-      const taskDateStr = t.deadline.split('T')[0];
+      const taskDateStr = getBangkokCalendarDate(t.deadline);
       return taskDateStr === todayStr;
     });
 
@@ -49,18 +49,17 @@ export const TaskProvider = ({ children }) => {
     const priorityEmoji = task.priority === 'High' ? '🚨' : task.priority === 'Medium' ? '📌' : '🌱';
     const priorityLabel = task.priority === 'High' ? '[ด่วนมาก]' : task.priority === 'Medium' ? '[ปานกลาง]' : '[ทั่วไป]';
 
+    const startDateStr = getBangkokCalendarDate(task.deadline);
+    const endDateStr = getBangkokCalendarNextDay(startDateStr);
+
     const eventData = {
       summary: `${nextCompletedState ? '✅ [เสร็จแล้ว] ' : `${priorityEmoji} ${priorityLabel} `}${task.title}`,
       description: `${task.description || 'สร้างจากระบบจัดการงานอัจฉริยะ Focus Space'}\n\n---\n🌱 โฟกัสและติดตามงานนี้ต่อได้ในระบบ Focus Space`,
       start: {
-        date: new Date(task.deadline).toISOString().split('T')[0]
+        date: startDateStr
       },
       end: {
-        date: (() => {
-          const d = new Date(task.deadline);
-          d.setDate(d.getDate() + 1);
-          return d.toISOString().split('T')[0];
-        })()
+        date: endDateStr
       },
       reminders: buildGoogleCalendarReminders(task)
     };
@@ -348,19 +347,16 @@ export const TaskProvider = ({ children }) => {
 
     // Parse Thai Date
     let deadline = null;
-    const today = new Date();
-    const currentYear = today.getFullYear();
+    const todayStr = getBangkokCalendarDate(new Date());
+    const currentYear = parseInt(todayStr.split('-')[0], 10);
+    const currentMonthIndex = parseInt(todayStr.split('-')[1], 10) - 1;
 
     if (combinedText.includes('วันนี้')) {
-      deadline = today.toISOString().split('T')[0];
+      deadline = todayStr;
     } else if (combinedText.includes('พรุ่งนี้')) {
-      const d = new Date(today);
-      d.setDate(d.getDate() + 1);
-      deadline = d.toISOString().split('T')[0];
+      deadline = getBangkokCalendarNextDay(todayStr);
     } else if (combinedText.includes('มะรืนนี้')) {
-      const d = new Date(today);
-      d.setDate(d.getDate() + 2);
-      deadline = d.toISOString().split('T')[0];
+      deadline = getBangkokCalendarNextDay(getBangkokCalendarNextDay(todayStr));
     } else {
       const thaiMonths = {
         'มกราคม': 0, 'ม.ค.': 0, 'มค': 0,
@@ -386,11 +382,10 @@ export const TaskProvider = ({ children }) => {
             if (dayMatch[2]) {
               const parsedYear = parseInt(dayMatch[2], 10);
               year = parsedYear > 2500 ? parsedYear - 543 : parsedYear;
-            } else if (monthIndex < today.getMonth()) {
+            } else if (monthIndex < currentMonthIndex) {
               year = currentYear + 1;
             }
-            const dateObj = new Date(year, monthIndex, day);
-            deadline = dateObj.toISOString().split('T')[0];
+            deadline = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             break;
           }
         }
