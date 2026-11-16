@@ -96,7 +96,8 @@ router.post('/login', async (req, res) => {
         email: user.email,
         profileImage: user.profileImage,
         googleClientId: user.googleClientId,
-        isSetupCompleted: user.isSetupCompleted
+        isSetupCompleted: user.isSetupCompleted,
+        companionHistory: user.companionHistory || {}
       }
     });
   } catch (err) {
@@ -222,7 +223,8 @@ router.post('/google-login', async (req, res) => {
         email: user.email,
         profileImage: user.profileImage,
         googleClientId: user.googleClientId || process.env.GOOGLE_CLIENT_ID || '',
-        isSetupCompleted: user.isSetupCompleted === undefined ? true : user.isSetupCompleted
+        isSetupCompleted: user.isSetupCompleted === undefined ? true : user.isSetupCompleted,
+        companionHistory: user.companionHistory || {}
       }
     });
   } catch (err) {
@@ -282,7 +284,8 @@ router.post('/google-oauth-login', async (req, res) => {
         email: user.email,
         profileImage: user.profileImage,
         googleClientId: user.googleClientId || process.env.GOOGLE_CLIENT_ID || '',
-        isSetupCompleted: user.isSetupCompleted === undefined ? true : user.isSetupCompleted
+        isSetupCompleted: user.isSetupCompleted === undefined ? true : user.isSetupCompleted,
+        companionHistory: user.companionHistory || {}
       }
     });
   } catch (err) {

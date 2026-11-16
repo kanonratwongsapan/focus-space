@@ -38,15 +38,21 @@ const GardenStats = () => {
   const pomodoroFlowers = Math.floor((totalPomodoroTime || 0) / 25);
   const bloomedFlowers = Math.max(taskFlowers, taskFlowers + pomodoroFlowers);
 
-  // Read actual companion focus history from localStorage
+  // Read actual companion focus history from localStorage with user.companionHistory fallback
   const companionHistory = useMemo(() => {
     try {
       const saved = localStorage.getItem('focus_companion_history');
-      return saved ? JSON.parse(saved) : {};
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+          return parsed;
+        }
+      }
+      return (user?.companionHistory && typeof user.companionHistory === 'object') ? user.companionHistory : {};
     } catch {
-      return {};
+      return (user?.companionHistory && typeof user.companionHistory === 'object') ? user.companionHistory : {};
     }
-  }, []);
+  }, [user]);
 
   // Plant distribution breakdown stats
   const sunflowerCount = companionHistory['sunflower'] !== undefined 

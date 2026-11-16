@@ -85,16 +85,32 @@ router.delete('/active-session', async (req, res) => {
 // Record completed Pomodoro session
 router.post('/session', async (req, res) => {
   try {
-    const { taskId, duration } = req.body;
+    const { taskId, duration, companionType } = req.body;
+    const companion = companionType || 'sunflower';
     
     // Create focus session
     const session = new FocusSession({
       userId: req.userId,
       taskId: taskId || null,
       duration: duration || 25,
+      companionType: companion,
     });
 
     await session.save();
+
+    // Increment companion history on User document
+    const validCompanions = ['sunflower', 'sakura', 'tulip', 'daisy', 'pine', 'phoenix', 'dragon', 'tiger', 'wolf', 'gryphon'];
+    let updatedHistory = null;
+    if (validCompanions.includes(companion)) {
+      const user = await User.findByIdAndUpdate(
+        req.userId,
+        { $inc: { [`companionHistory.${companion}`]: 1 } },
+        { new: true }
+      ).select('companionHistory');
+      if (user) {
+        updatedHistory = user.companionHistory;
+      }
+    }
 
     // If session is tied to a specific task, increment its count
     if (taskId) {
@@ -108,7 +124,48 @@ router.post('/session', async (req, res) => {
     res.status(201).json({
       message: 'Focus session recorded successfully',
       session,
+      companionHistory: updatedHistory
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Sync / merge companion history from local storage to cloud
+router.post('/companion-history/sync', async (req, res) => {
+  try {
+    const { localHistory } = req.body;
+    if (!localHistory || typeof localHistory !== 'object') {
+      return res.status(400).json({ message: 'Invalid history data' });
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.companionHistory) {
+      user.companionHistory = {};
+    }
+
+    const validCompanions = ['sunflower', 'sakura', 'tulip', 'daisy', 'pine', 'phoenix', 'dragon', 'tiger', 'wolf', 'gryphon'];
+    let changed = false;
+
+    for (const key of validCompanions) {
+      const localVal = Number(localHistory[key]) || 0;
+      const currentVal = Number(user.companionHistory[key]) || 0;
+      if (localVal > currentVal) {
+        user.companionHistory[key] = localVal;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      user.markModified('companionHistory');
+      await user.save();
+    }
+
+    res.json({ companionHistory: user.companionHistory });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

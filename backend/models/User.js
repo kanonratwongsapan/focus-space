@@ -47,6 +47,18 @@ const userSchema = new mongoose.Schema({
     isBreak: { type: Boolean, default: false },
     selectedTaskId: { type: String, default: '' },
     selectedFlower: { type: String, default: 'sunflower' }
+  },
+  companionHistory: {
+    sunflower: { type: Number, default: 0 },
+    sakura: { type: Number, default: 0 },
+    tulip: { type: Number, default: 0 },
+    daisy: { type: Number, default: 0 },
+    pine: { type: Number, default: 0 },
+    phoenix: { type: Number, default: 0 },
+    dragon: { type: Number, default: 0 },
+    tiger: { type: Number, default: 0 },
+    wolf: { type: Number, default: 0 },
+    gryphon: { type: Number, default: 0 }
   }
 }, {
   timestamps: true

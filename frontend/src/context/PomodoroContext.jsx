@@ -301,6 +301,30 @@ export const PomodoroProvider = ({ children }) => {
               const history = historyStr ? JSON.parse(historyStr) : {};
               history[activeCompanion] = (history[activeCompanion] || 0) + 1;
               localStorage.setItem('focus_companion_history', JSON.stringify(history));
+
+              // Asynchronously record session & persist companion history to MongoDB Cloud
+              const token = localStorage.getItem('token');
+              if (token) {
+                fetch(`${API_URL}/pomodoro/session`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                  },
+                  body: JSON.stringify({
+                    taskId: selectedTaskId || null,
+                    duration: workDuration || 25,
+                    companionType: activeCompanion
+                  })
+                })
+                .then(res => res.json())
+                .then(data => {
+                  if (data?.companionHistory) {
+                    localStorage.setItem('focus_companion_history', JSON.stringify(data.companionHistory));
+                  }
+                })
+                .catch(e => console.warn('Record session cloud error:', e));
+              }
             } catch (e) {
               console.error('Companion history error:', e);
             }

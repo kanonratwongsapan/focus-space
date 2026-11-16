@@ -16,6 +16,10 @@ const focusSessionSchema = new mongoose.Schema({
     required: true,
     default: 25, // default pomodoro duration in minutes
   },
+  companionType: {
+    type: String,
+    default: 'sunflower',
+  },
   createdAt: {
     type: Date,
     default: Date.now,
