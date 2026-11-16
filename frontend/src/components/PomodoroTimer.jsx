@@ -169,14 +169,15 @@ const PomodoroTimer = () => {
           padding: '2rem',
           textAlign: 'center'
         }}>
-          {/* Top Right Action Controls */}
+          {/* Top Right Action Controls (Safe Area aware for mobile notches) */}
           <div style={{
             position: 'absolute',
-            top: '24px',
-            right: '24px',
+            top: 'max(24px, env(safe-area-inset-top, 24px))',
+            right: 'max(24px, env(safe-area-inset-right, 24px))',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px'
+            gap: '10px',
+            zIndex: 10
           }}>
             {/* Cancel Focus Button */}
             <button

@@ -100,12 +100,90 @@ export const PomodoroProvider = ({ children }) => {
     }
   };
 
+  const audioCtxRef = useRef(null);
+  const wakeLockRef = useRef(null);
+
+  // Pre-warm AudioContext on user interaction (resolves iOS/Safari Autoplay mute)
+  const unlockAudioContext = () => {
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+        audioCtxRef.current = new AudioContextClass();
+      }
+      if (audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume();
+      }
+    } catch (e) {
+      console.warn('Audio pre-warm error:', e);
+    }
+  };
+
+  // Screen Wake Lock controls (keeps mobile screen awake like a desk clock)
+  const acquireWakeLock = async () => {
+    try {
+      if ('wakeLock' in navigator && !wakeLockRef.current) {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+        wakeLockRef.current.addEventListener('release', () => {
+          wakeLockRef.current = null;
+        });
+      }
+    } catch (err) {
+      // Gracefully ignore wake lock errors (e.g. low power battery mode)
+      wakeLockRef.current = null;
+    }
+  };
+
+  const releaseWakeLock = async () => {
+    try {
+      if (wakeLockRef.current) {
+        await wakeLockRef.current.release();
+        wakeLockRef.current = null;
+      }
+    } catch (err) {
+      wakeLockRef.current = null;
+    }
+  };
+
+  // Mobile Haptic Vibration feedback for silent mode reading
+  const triggerHapticVibrate = (pattern = [200, 100, 200, 100, 400]) => {
+    try {
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate(pattern);
+      }
+    } catch (e) {
+      // Gracefully ignore on devices without vibration motors
+    }
+  };
+
+  // Re-acquire wake lock if mobile user switches back to active tab
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isActive) {
+        acquireWakeLock();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      releaseWakeLock();
+    };
+  }, [isActive]);
+
   // AudioContext synthesizer sound
   const playAlertSound = (type = 'success') => {
     try {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (!AudioContextClass) return;
-      const ctx = new AudioContextClass();
+      
+      let ctx = audioCtxRef.current;
+      if (!ctx || ctx.state === 'closed') {
+        ctx = new AudioContextClass();
+        audioCtxRef.current = ctx;
+      }
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
       const now = ctx.currentTime;
       
       const playSpaceTone = (freq, startTime, duration, waveType = 'sine') => {
@@ -270,10 +348,12 @@ export const PomodoroProvider = ({ children }) => {
           localStorage.setItem('focus_isActive', 'false');
           clearInterval(intervalRef.current);
           clearCloudSession();
+          releaseWakeLock();
           
           if (!isBreak) {
             // Work finished
             playAlertSound('success');
+            triggerHapticVibrate([200, 100, 200, 100, 400]);
             sendNotification('สมาธิสำเร็จ! 🍅', `ครบรอบเวลาโฟกัส ${workDuration} นาทีแล้ว ได้เวลาพักผ่อน ${breakDuration} นาที`);
             setIsBreak(true);
             localStorage.setItem('focus_isBreak', 'true');
@@ -338,6 +418,8 @@ export const PomodoroProvider = ({ children }) => {
           } else {
             // Break finished
             playAlertSound('break');
+            triggerHapticVibrate([150, 80, 150]);
+            releaseWakeLock();
             sendNotification('หมดเวลาพัก! 🌸', 'ได้เวลากลับมาฟูมฟักสวนสมาธิของคุณแล้วค่ะ');
             setIsBreak(false);
             localStorage.setItem('focus_isBreak', 'false');
@@ -363,8 +445,13 @@ export const PomodoroProvider = ({ children }) => {
   }, [isActive, targetEndTime, isBreak, selectedTaskId, workDuration, breakDuration]);
 
   const toggleTimer = () => {
+    // Pre-warm AudioContext on user touch gesture (unmutes iOS/Safari)
+    unlockAudioContext();
+
     if (!isActive) {
-      // Starting or resuming timer
+      // Starting or resuming timer -> Keep mobile screen awake
+      acquireWakeLock();
+
       const currentSecondsTotal = minutes * 60 + seconds;
       const newTarget = Date.now() + (currentSecondsTotal > 0 ? currentSecondsTotal : (isBreak ? breakDuration : workDuration) * 60) * 1000;
       
@@ -388,7 +475,9 @@ export const PomodoroProvider = ({ children }) => {
         localStorage.getItem('focus_selectedFlower')
       );
     } else {
-      // Pausing timer
+      // Pausing timer -> Release screen lock
+      releaseWakeLock();
+
       setIsActive(false);
       setTargetEndTime(null);
       
@@ -403,6 +492,7 @@ export const PomodoroProvider = ({ children }) => {
   };
 
   const resetTimer = () => {
+    releaseWakeLock();
     setIsActive(false);
     setIsBreak(false);
     setTargetEndTime(null);
@@ -416,6 +506,7 @@ export const PomodoroProvider = ({ children }) => {
   };
 
   const clearLocalTimer = () => {
+    releaseWakeLock();
     setIsActive(false);
     setIsBreak(false);
     setTargetEndTime(null);
