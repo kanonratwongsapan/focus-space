@@ -1117,9 +1117,27 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
           <p className="task-page-subtitle" style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>จัดการและวางแผนภารกิจเพาะปลูก ค้นหา และซิงค์กำหนดส่งไปยัง Google Calendar</p>
         </div>
         
-        <button className="btn btn-primary btn-create-task-main" onClick={() => setIsCreateOpen(true)} style={{ padding: '0.8rem 1.75rem', background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)', border: 'none', borderRadius: '16px', boxShadow: '0 6px 20px rgba(76, 175, 80, 0.3)' }}>
-          <Plus size={20} />
-          + เพาะปลูกภารกิจใหม่
+        <button 
+          className="btn btn-primary btn-create-task-main" 
+          onClick={() => setIsCreateOpen(true)} 
+          style={{ 
+            padding: '0.8rem 1.75rem', 
+            background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)', 
+            border: 'none', 
+            borderRadius: '16px', 
+            boxShadow: '0 6px 20px rgba(76, 175, 80, 0.3)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            fontWeight: 700,
+            fontSize: '0.95rem',
+            color: '#ffffff',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          <Plus size={20} strokeWidth={2.5} />
+          <span>เพาะปลูกภารกิจใหม่</span>
         </button>
       </header>
 
@@ -1501,7 +1519,7 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
       ) : filteredTasks.length === 0 ? (
         <div className="glass" style={{ padding: '4rem 2rem', textAlign: 'center', color: '#64748b', borderRadius: '24px', border: '1px solid rgba(76, 175, 80, 0.25)', background: '#ffffff' }}>
           {tasks.length === 0 
-            ? '🌸 แปลงพฤกษาสวนของคุณยังว่างเปล่า! กดปุ่ม "+ เพาะปลูกภารกิจใหม่" เพื่อเริ่มสร้างภารกิจแรกกันเลยค่ะ 🌱' 
+            ? '🌸 แปลงพฤกษาสวนของคุณยังว่างเปล่า! กดปุ่ม "เพาะปลูกภารกิจใหม่" เพื่อเริ่มสร้างภารกิจแรกกันเลยค่ะ 🌱' 
             : 'ไม่พบภารกิจเพาะปลูกที่ตรงตามตัวกรองค้นหาของคุณค่ะ 🔍'}
         </div>
       ) : (
