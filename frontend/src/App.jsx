@@ -122,7 +122,7 @@ function MainAppContent() {
         }}>
           <div className="header-left" style={{ textAlign: 'left' }}>
             <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
-              Focus Space / {currentTab === 'dashboard' ? 'แผงควบคุมหลัก' : currentTab === 'tasks' ? 'รายการภารกิจ' : currentTab === 'pomodoro' ? 'จับเวลาโฟกัส' : currentTab === 'stats' ? 'สถิติสวนความสำเร็จ' : currentTab === 'calendar' ? 'ปฏิทินพฤกษา' : currentTab === 'journal' ? 'สมุดบันทึกในสวน' : currentTab === 'admin' ? 'ตั้งค่าระบบ AI (Admin)' : 'ตั้งค่าโปรไฟล์'}
+              Focus Space / {currentTab === 'dashboard' ? 'แผงควบคุมหลัก' : currentTab === 'tasks' ? 'รายการภารกิจ' : currentTab === 'pomodoro' ? 'จับเวลาโฟกัส' : currentTab === 'stats' ? 'สถิติสวนความสำเร็จ' : currentTab === 'calendar' ? 'ปฏิทินพฤกษา' : currentTab === 'journal' ? 'สมุดบันทึกในสวน' : currentTab === 'admin' ? 'ตั้งค่าโมเดล AI' : 'ตั้งค่าโปรไฟล์'}
             </span>
           </div>
 
@@ -226,6 +226,23 @@ function MainAppContent() {
                     )}
                   </div>
                   <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1b4332' }}>{user.username}</span>
+                  {(user?.email === 'kanonrat.wo@rmuti.ac.th' || user?.role === 'admin') && (
+                    <span style={{
+                      fontSize: '0.62rem',
+                      fontWeight: 800,
+                      color: '#ffffff',
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      padding: '2px 8px',
+                      borderRadius: '8px',
+                      letterSpacing: '0.3px',
+                      boxShadow: '0 2px 6px rgba(16, 185, 129, 0.25)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '3px'
+                    }}>
+                      👑 ผู้พัฒนาโครงงาน
+                    </span>
+                  )}
                 </div>
 
                 {/* Facebook-style Dropdown Menu */}
@@ -354,7 +371,7 @@ function MainAppContent() {
                           }}
                         >
                           <Sparkles size={16} color="#2e7d32" />
-                          <span>ตั้งค่าระบบ AI (Admin)</span>
+                          <span>ตั้งค่าโมเดล AI</span>
                         </div>
 
                         {/* Logout Option */}

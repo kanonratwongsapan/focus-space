@@ -312,11 +312,11 @@ const AdminSettings = () => {
             </span>
           </div>
           <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#1b4332', margin: '0 0 0.5rem 0' }}>
-            ระบบจัดการแอดมินและสถาปัตยกรรม AI
+            ระบบเลือกโมเดลและสถาปัตยกรรม AI
           </h2>
           <p style={{ margin: 0, fontSize: '0.92rem', color: '#4a6b57', lineHeight: 1.6 }}>
-            ศูนย์กลางการตั้งค่า API Keys และการเลือกผู้ให้บริการปัญญาประดิษฐ์ (Multi-Provider Model Switcher) 
-            ช่วยยกเลิกการ Hardcode คีย์ลับไว้ในระบบหลังบ้าน และรองรับการเปลี่ยนค่าย AI ได้อย่างอิสระตามคำแนะนำของอาจารย์ที่ปรึกษา
+            ศูนย์กลางการเลือกผู้ให้บริการปัญญาประดิษฐ์ (Multi-Provider Model Switcher) รองรับทั้ง Google Gemini, OpenAI และ OpenRouter 
+            ช่วยให้นักศึกษาและอาจารย์สามารถเลือกหรือทดสอบโมเดลที่ต้องการได้อย่างอิสระตามคำแนะนำของอาจารย์ที่ปรึกษา
           </p>
         </div>
 

@@ -250,7 +250,14 @@ const Sidebar = ({ currentTab, setCurrentTab, isOpen, setIsOpen, onOpenProfile }
                 <UserIcon size={18} color="#2e7d32" />
                 <span>ตั้งค่าโปรไฟล์</span>
               </div>
+            </nav>
 
+            {/* Category 3: AI Intelligence System */}
+            <div className="nav-category-title" style={{ marginTop: '0.9rem' }}>
+              <span>ระบบปัญญาประดิษฐ์ (AI)</span>
+            </div>
+
+            <nav>
               <div
                 className={`nav-item-pill ${currentTab === 'admin' ? 'active' : ''}`}
                 onClick={() => {
@@ -259,7 +266,18 @@ const Sidebar = ({ currentTab, setCurrentTab, isOpen, setIsOpen, onOpenProfile }
                 }}
               >
                 <Sparkles size={18} color="#2e7d32" />
-                <span>ตั้งค่าระบบ AI (Admin)</span>
+                <span style={{ flex: 1 }}>ตั้งค่าโมเดล AI</span>
+                <span style={{
+                  fontSize: '0.62rem',
+                  fontWeight: 800,
+                  color: currentTab === 'admin' ? '#ffffff' : '#2e7d32',
+                  background: currentTab === 'admin' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(46, 125, 50, 0.12)',
+                  padding: '2px 7px',
+                  borderRadius: '6px',
+                  letterSpacing: '0.3px'
+                }}>
+                  3 ค่าย
+                </span>
               </div>
             </nav>
           </div>
@@ -460,7 +478,7 @@ const Sidebar = ({ currentTab, setCurrentTab, isOpen, setIsOpen, onOpenProfile }
                   <Sparkles size={20} />
                 </div>
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1b4332' }}>ระบบจัดการ AI (Admin)</div>
+                  <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1b4332' }}>ตั้งค่าโมเดล AI</div>
                   <div style={{ fontSize: '0.72rem', color: '#64748b' }}>สลับโมเดล Gemini / OpenAI / OpenRouter</div>
                 </div>
               </div>
