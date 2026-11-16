@@ -1,3 +1,6 @@
+// Enforce Thailand Timezone (ICT, UTC+7) globally
+process.env.TZ = 'Asia/Bangkok';
+
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';

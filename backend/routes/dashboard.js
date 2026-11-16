@@ -38,27 +38,43 @@ router.get('/stats', async (req, res) => {
       .sort({ pomodoroCycles: -1 })
       .limit(5);
 
-    // 4. Daily trends for the last 7 days
+    // 4. Daily trends for the last 7 days anchored precisely to Thailand Timezone (ICT, UTC+7)
     const dailyTrends = [];
-    const now = new Date();
+    const BANGKOK_OFFSET_MS = 7 * 60 * 60 * 1000;
+    
+    // Determine today in Bangkok
+    const nowBkk = new Date(Date.now() + BANGKOK_OFFSET_MS);
+    const bkkYear = nowBkk.getUTCFullYear();
+    const bkkMonth = nowBkk.getUTCMonth();
+    const bkkDate = nowBkk.getUTCDate();
     
     for (let i = 6; i >= 0; i--) {
-      const date = new Date(now);
-      date.setDate(now.getDate() - i);
+      // Calculate target day in Thailand
+      const targetBkkDate = new Date(Date.UTC(bkkYear, bkkMonth, bkkDate - i));
+      const ty = targetBkkDate.getUTCFullYear();
+      const tm = targetBkkDate.getUTCMonth();
+      const td = targetBkkDate.getUTCDate();
       
-      const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
-      const endOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+      // Exact start (00:00:00 ICT) and end (23:59:59.999 ICT) of Thailand day converted to UTC for MongoDB queries
+      const startOfDay = new Date(Date.UTC(ty, tm, td, 0, 0, 0, 0) - BANGKOK_OFFSET_MS);
+      const endOfDay = new Date(Date.UTC(ty, tm, td, 23, 59, 59, 999) - BANGKOK_OFFSET_MS);
       
-      const dayLabel = date.toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short' });
+      // Thai day label (e.g. 'อ. 17 พ.ย.')
+      const dayLabel = targetBkkDate.toLocaleDateString('th-TH', { 
+        weekday: 'short', 
+        day: 'numeric', 
+        month: 'short',
+        timeZone: 'UTC'
+      });
 
-      // Count tasks completed on this day
+      // Count tasks completed on this day in Thailand
       const completedCount = await Task.countDocuments({
         user: userId,
         completed: true,
         completedAt: { $gte: startOfDay, $lte: endOfDay }
       });
 
-      // Count focus sessions on this day
+      // Count focus sessions on this day in Thailand
       const daySessions = await FocusSession.find({
         userId,
         createdAt: { $gte: startOfDay, $lte: endOfDay }

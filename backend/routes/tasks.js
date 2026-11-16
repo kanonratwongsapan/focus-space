@@ -8,44 +8,60 @@ const router = express.Router();
 // Analyze task priority without saving (for user confirmation UI)
 router.post('/analyze', auth, analyzeTaskPriority);
 
+const BANGKOK_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+// Returns date string YYYY-MM-DD in Thailand Time (ICT, UTC+7)
+const getBangkokDateStr = (date = new Date()) => {
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(date);
+  } catch {
+    const bkk = new Date(date.getTime() + BANGKOK_OFFSET_MS);
+    const y = bkk.getUTCFullYear();
+    const m = String(bkk.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(bkk.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+};
+
 const extractRelativeDeadline = (title, description) => {
   const combinedText = `${title} ${description || ''}`.toLowerCase();
-  const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = getBangkokDateStr();
+  const todayMidnight = new Date(`${todayStr}T00:00:00.000+07:00`);
   
   if (combinedText.includes('วันนี้')) {
-    return new Date(todayStr);
+    return new Date(`${todayStr}T23:59:59.999+07:00`);
   } else if (combinedText.includes('พรุ่งนี้')) {
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    return new Date(tomorrow.toISOString().split('T')[0]);
+    const tomorrow = new Date(todayMidnight.getTime() + 24 * 60 * 60 * 1000);
+    const tomorrowStr = getBangkokDateStr(tomorrow);
+    return new Date(`${tomorrowStr}T23:59:59.999+07:00`);
   } else if (combinedText.includes('มะรืนนี้')) {
-    const dayAfter = new Date(today);
-    dayAfter.setDate(today.getDate() + 2);
-    return new Date(dayAfter.toISOString().split('T')[0]);
+    const dayAfter = new Date(todayMidnight.getTime() + 48 * 60 * 60 * 1000);
+    const dayAfterStr = getBangkokDateStr(dayAfter);
+    return new Date(`${dayAfterStr}T23:59:59.999+07:00`);
   } else {
     // Match "อีก X วัน"
     const matchDays = combinedText.match(/อีก\s*(\d+)\s*วัน/);
     if (matchDays && matchDays[1]) {
       const daysToAdd = parseInt(matchDays[1], 10);
-      const targetDate = new Date(today);
-      targetDate.setDate(today.getDate() + daysToAdd);
-      return new Date(targetDate.toISOString().split('T')[0]);
+      const targetDate = new Date(todayMidnight.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+      const targetDateStr = getBangkokDateStr(targetDate);
+      return new Date(`${targetDateStr}T23:59:59.999+07:00`);
     }
   }
   return null;
 };
 
-// Helper: Gradual Multi-Tier Step-by-Step Priority Escalation (0-2 Days = High, 3-5 Days = Medium)
+// Helper: Gradual Multi-Tier Step-by-Step Priority Escalation in Thailand Time (0-2 Days = High, 3-5 Days = Medium)
 const getGradualEscalatedPriority = (currentPriority, deadline, isCompleted) => {
   if (!deadline || isCompleted) return { priority: currentPriority, reason: null };
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const targetDate = new Date(deadline);
-  targetDate.setHours(0, 0, 0, 0);
+  const todayStr = getBangkokDateStr();
+  const todayMidnight = new Date(`${todayStr}T00:00:00.000+07:00`);
+  
+  const targetDateStr = getBangkokDateStr(new Date(deadline));
+  const targetMidnight = new Date(`${targetDateStr}T00:00:00.000+07:00`);
 
-  const diffTime = targetDate - today;
+  const diffTime = targetMidnight - todayMidnight;
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
   // Tier 1: Remaining 0-2 days (or overdue) -> Escalate to High (🔴 Red)
