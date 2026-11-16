@@ -267,17 +267,6 @@ const Sidebar = ({ currentTab, setCurrentTab, isOpen, setIsOpen, onOpenProfile }
               >
                 <Sparkles size={18} color="#2e7d32" />
                 <span style={{ flex: 1 }}>ตั้งค่าโมเดล AI</span>
-                <span style={{
-                  fontSize: '0.62rem',
-                  fontWeight: 800,
-                  color: currentTab === 'admin' ? '#ffffff' : '#2e7d32',
-                  background: currentTab === 'admin' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(46, 125, 50, 0.12)',
-                  padding: '2px 7px',
-                  borderRadius: '6px',
-                  letterSpacing: '0.3px'
-                }}>
-                  3 ค่าย
-                </span>
               </div>
             </nav>
           </div>
