@@ -87,5 +87,10 @@ const taskSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Performance Indexes for Scalability (IXSCAN optimization)
+taskSchema.index({ user: 1, completed: 1 });
+taskSchema.index({ user: 1, createdAt: -1 });
+taskSchema.index({ user: 1, deadline: 1 });
+
 const Task = mongoose.model('Task', taskSchema);
 export default Task;

@@ -26,5 +26,8 @@ const focusSessionSchema = new mongoose.Schema({
   },
 });
 
+// Performance Index for Dashboard Trends & Session Lookups
+focusSessionSchema.index({ userId: 1, createdAt: -1 });
+
 const FocusSession = mongoose.model('FocusSession', focusSessionSchema);
 export default FocusSession;
