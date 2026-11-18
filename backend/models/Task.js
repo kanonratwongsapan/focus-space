@@ -30,6 +30,20 @@ const taskSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  impact: {
+    type: String,
+    enum: ['High', 'Medium', 'Low', 'None'],
+    default: 'None'
+  },
+  urgency: {
+    type: String,
+    enum: ['High', 'Medium', 'Low', 'None'],
+    default: 'None'
+  },
+  estimatedMinutes: {
+    type: Number,
+    default: 0
+  },
   isConfirmed: {
     type: Boolean,
     default: false

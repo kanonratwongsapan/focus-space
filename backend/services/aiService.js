@@ -53,24 +53,29 @@ export const getActiveAIConfig = async () => {
 };
 
 /**
- * Common prompt builder
+ * Common prompt builder - 3-D Prioritization Matrix (Impact, Urgency, Effort)
  */
 const buildTaskAnalysisPrompt = (title, description, todayStr, todayDayName) => {
-  return `You are an intelligent task management assistant. Analyze the following task and classify its priority into 'High', 'Medium', or 'Low' based on urgency, importance, deadlines, travel plans, complexity, and educational or business consequences.
-Also, check if the task text (title or description) implies a specific deadline/date in Thai (like 'วันนี้', 'พรุ่งนี้', 'มะรืนนี้', 'อีก 3 วัน', 'วันศุกร์นี้') and translate it into a YYYY-MM-DD date string.
+  return `You are an intelligent task management assistant adhering to the Global 3-D Prioritization Matrix (Impact, Urgency, Effort).
+Analyze the following university student's task and evaluate:
+1. "impact": 'High' | 'Medium' | 'Low' (educational, career, or personal consequences/importance)
+2. "urgency": 'High' | 'Medium' | 'Low' (time sensitivity, deadline proximity)
+3. "priority": 'High' | 'Medium' | 'Low' (overall priority derived from impact and urgency)
+4. "estimatedMinutes": estimated integer minutes required to finish this task (e.g., quick chore/email: 15-30, homework/reading: 45-60, comprehensive report/slides/exam prep: 90-180)
+5. "deadline": YYYY-MM-DD or null (if relative Thai date like 'วันนี้', 'พรุ่งนี้', 'มะรืนนี้', 'อีก X วัน', 'วันศุกร์นี้' is mentioned)
+6. "reason": Professional, clear explanation in Thai (1-3 sentences) summarizing the 3-D evaluation (Impact, Urgency, and Workload).
+
 Today's reference date in Thailand is: ${todayStr} (${todayDayName}).
 
 Respond ONLY with a JSON object in this exact format:
 {
   "priority": "High" | "Medium" | "Low",
-  "reason": "Detailed, professional, and clear explanation in Thai (around 1-3 sentences) analyzing exactly why this priority was assigned, referencing travel plans, academic significance, deadlines, work volume, or consequences if mentioned.",
-  "deadline": "YYYY-MM-DD" or null (if no date is implied in the text)
+  "impact": "High" | "Medium" | "Low",
+  "urgency": "High" | "Medium" | "Low",
+  "estimatedMinutes": 60,
+  "reason": "คำอธิบายวิเคราะห์ 3 มิติในภาษาไทย (1-3 ประโยค)",
+  "deadline": "YYYY-MM-DD" or null
 }
-
-Guidelines for priority classification:
-- **High**: Urgent deadlines (today, tomorrow, next morning), exams, critical meetings, high-impact tasks (e.g. grading/submitting reports that affect students' graduation, business presentations, travel preparation, or task complexity requiring immediate action).
-- **Medium**: Regular work, tasks with reasonable timelines, important but not immediate (e.g. "ออกกำลังกายเย็นนี้", "ซื้อของเข้าบ้านสัปดาห์นี้", "ทำสรุปรายงานส่งปลายสัปดาห์").
-- **Low**: Non-urgent chores, leisure activities, games, movies.
 
 Task Details:
 Title: "${title}"
@@ -221,15 +226,28 @@ export const fallbackRuleBasedAnalysis = (title = '', description = '', todayStr
     'เดินเล่น', 'ชิล', 'ผ่อนคลาย', 'การ์ตูน', 'ฟังเพลง', 'ยืดเส้น', 'กวาดห้อง'
   ];
 
+  let impact = 'Medium';
+  let urgency = 'Medium';
+  let estimatedMinutes = 45;
+
   if (highKeywords.some(keyword => combinedText.includes(keyword))) {
     priority = 'High';
-    reason = 'วิเคราะห์จากระบบอัตโนมัติ: มีคำสำคัญที่แสดงถึงความสำคัญระดับสูง เช่น กำหนดส่งงานหรือการศึกษา';
+    impact = 'High';
+    urgency = 'High';
+    estimatedMinutes = 90;
+    reason = 'วิเคราะห์จากระบบอัตโนมัติ: มีคำสำคัญที่แสดงถึงผลกระทบสูงและความเร่งด่วนต่องาน/การศึกษา';
   } else if (lowKeywords.some(keyword => combinedText.includes(keyword))) {
     priority = 'Low';
+    impact = 'Low';
+    urgency = 'Low';
+    estimatedMinutes = 25;
     reason = 'วิเคราะห์จากระบบอัตโนมัติ: เป็นกิจกรรมผ่อนคลายหรืองานเบาทั่วไป';
   } else {
     priority = 'Medium';
-    reason = 'วิเคราะห์จากระบบอัตโนมัติ: กิจกรรมทั่วไปที่มีความสำคัญปานกลาง';
+    impact = 'Medium';
+    urgency = 'Medium';
+    estimatedMinutes = 45;
+    reason = 'วิเคราะห์จากระบบอัตโนมัติ: กิจกรรมทั่วไปที่มีความสำคัญและภาระงานปานกลาง';
   }
 
   // Thai Date Extraction
@@ -251,6 +269,9 @@ export const fallbackRuleBasedAnalysis = (title = '', description = '', todayStr
 
   return {
     priority,
+    impact,
+    urgency,
+    estimatedMinutes,
     reason,
     deadline,
     isAiSuccess: false,
@@ -301,6 +322,9 @@ export const analyzeTaskWithMultiProvider = async (title, description) => {
     const parsed = JSON.parse(cleanedJson);
     return {
       priority: parsed.priority || 'Medium',
+      impact: parsed.impact || parsed.priority || 'Medium',
+      urgency: parsed.urgency || parsed.priority || 'Medium',
+      estimatedMinutes: Number(parsed.estimatedMinutes) || 60,
       reason: parsed.reason || `วิเคราะห์ด้วย ${activeProvider.toUpperCase()} (${selectedModel}) สำเร็จ`,
       deadline: parsed.deadline || null,
       isAiSuccess: true,

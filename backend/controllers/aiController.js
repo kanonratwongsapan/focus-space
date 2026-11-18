@@ -32,8 +32,15 @@ const fallbackRuleBasedAnalysis = (title, description, todayStr, res, prefix = '
   const matchedHigh = highKeywords.filter(keyword => combinedText.includes(keyword));
   const matchedLow = lowKeywords.filter(keyword => combinedText.includes(keyword));
 
+  let impact = 'Medium';
+  let urgency = 'Medium';
+  let estimatedMinutes = 45;
+
   if (matchedHigh.length > 0) {
     priority = 'High';
+    impact = 'High';
+    urgency = 'High';
+    estimatedMinutes = 90;
     
     // Customize rule-based reason based on matched critical concepts
     let details = [];
@@ -57,15 +64,22 @@ const fallbackRuleBasedAnalysis = (title, description, todayStr, res, prefix = '
     }
   } else if (matchedLow.length > 0) {
     priority = 'Low';
+    impact = 'Low';
+    urgency = 'Low';
+    estimatedMinutes = 25;
     reason = `[วิเคราะห์ความสำคัญต่ำ] ดูเหมือนเป็นงานบ้านทั่วไป กิจกรรมผ่อนคลาย หรือไม่มีกำหนดส่งชัดเจน (คำสำคัญ: ${matchedLow.join(', ')})`;
   } else {
+    priority = 'Medium';
+    impact = 'Medium';
+    urgency = 'Medium';
+    estimatedMinutes = 45;
     reason = 'วิเคราะห์เป็นความสำคัญระดับปานกลาง เนื่องจากเป็นงานทั่วไปในชีวิตประจำวันและไม่มีคีย์เวิร์ดบ่งชี้ถึงผลกระทบร้ายแรงหรือความเร่งด่วนในทันที';
   }
 
   // Parse relative/explicit Thai deadline from text (e.g. "20-30 กันยายน 2569", "พรุ่งนี้", "อีก 3 วัน")
   let deadline = parseThaiDateFromText(combinedText);
 
-  res.json({ priority, reason, deadline, isFallback: true });
+  res.json({ priority, impact, urgency, estimatedMinutes, reason, deadline, isFallback: true });
 };
 
 const parseThaiDateFromText = (text) => {

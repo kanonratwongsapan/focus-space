@@ -340,6 +340,9 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
         if (result.deadline) {
           setEditDeadline(result.deadline);
         }
+        if (result.estimatedMinutes) {
+          setEditTargetTime(result.estimatedMinutes);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -353,6 +356,9 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
         setSelectedPriority(result.priority);
         if (result.deadline) {
           setDeadline(result.deadline);
+        }
+        if (result.estimatedMinutes) {
+          setTargetTime(String(result.estimatedMinutes));
         }
       } catch (err) {
         console.error(err);
@@ -379,6 +385,9 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
       priority: selectedPriority,
       aiPriority: aiSuggestion ? aiSuggestion.priority : 'None',
       aiReason: aiSuggestion ? aiSuggestion.reason : '',
+      impact: aiSuggestion?.impact || 'None',
+      urgency: aiSuggestion?.urgency || 'None',
+      estimatedMinutes: aiSuggestion?.estimatedMinutes || Number(targetTime) || 0,
       isConfirmed: !!aiSuggestion,
       deadline: deadline ? new Date(deadline) : null,
       targetTime: Number(targetTime) || 0,
@@ -415,7 +424,13 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
     setEditReminderTime(task.reminderTime || '1440');
     setEditCustomReminderMinutes(task.customReminderMinutes || 30);
     setEditReminderMethod(task.reminderMethod || 'both');
-    setEditAiSuggestion(task.aiPriority !== 'None' ? { priority: task.aiPriority, reason: task.aiReason } : null);
+    setEditAiSuggestion(task.aiPriority !== 'None' ? { 
+      priority: task.aiPriority, 
+      reason: task.aiReason,
+      impact: task.impact,
+      urgency: task.urgency,
+      estimatedMinutes: task.estimatedMinutes
+    } : null);
     setIsEditOpen(true);
   };
 
@@ -436,6 +451,9 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
       priority: editPriority,
       aiPriority: editAiSuggestion ? editAiSuggestion.priority : editingTask.aiPriority,
       aiReason: editAiSuggestion ? editAiSuggestion.reason : editingTask.aiReason,
+      impact: editAiSuggestion?.impact || editingTask.impact || 'None',
+      urgency: editAiSuggestion?.urgency || editingTask.urgency || 'None',
+      estimatedMinutes: editAiSuggestion?.estimatedMinutes || Number(editTargetTime) || editingTask.estimatedMinutes || 0,
       isConfirmed: !!editAiSuggestion || editingTask.isConfirmed,
       deadline: editDeadline ? new Date(editDeadline) : null,
       targetTime: Number(editTargetTime) || 0,
@@ -1814,23 +1832,45 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                 />
               </div>
 
-              {/* AI Suggestion Area */}
+              {/* AI Suggestion Area (3-D Matrix: Impact, Urgency, Effort) */}
               {aiSuggestion && (
-                <div className="ai-suggest-banner" style={{ marginBottom: '1.5rem' }}>
+                <div className="ai-suggest-banner" style={{ marginBottom: '1.5rem', borderRadius: '18px', padding: '1rem 1.15rem', background: 'linear-gradient(135deg, rgba(138, 92, 245, 0.08) 0%, rgba(76, 175, 80, 0.08) 100%)', border: '1px solid rgba(138, 92, 245, 0.25)' }}>
                   <div className="ai-suggest-info">
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-purple)', display: 'flex', alignItems: 'center', gap: '0.25rem', flexWrap: 'wrap' }}>
-                      <Sparkles size={14} /> AI แนะนำระดับความสำคัญ: 
-                      <span className={`badge badge-${aiSuggestion.priority.toLowerCase()}`}>
-                        {aiSuggestion.priority === 'High' ? 'สูง' : aiSuggestion.priority === 'Medium' ? 'กลาง' : 'ต่ำ'}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--accent-purple)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Sparkles size={16} /> AI วิเคราะห์ 3 มิติสากล (3-D Matrix)
                       </span>
-                      {aiSuggestion.deadline && (
-                        <span style={{ fontSize: '0.8rem', color: '#2e7d32', fontWeight: 700, marginLeft: '8px' }}>
-                           📅 สกัดวันที่ (วัน/เดือน/ปี): {formatThaiDateLabel(aiSuggestion.deadline)}
+                      <span className={`badge badge-${aiSuggestion.priority?.toLowerCase() || 'medium'}`} style={{ fontWeight: 800 }}>
+                        ระดับรวม: {aiSuggestion.priority === 'High' ? 'สูง 🔴' : aiSuggestion.priority === 'Medium' ? 'กลาง 🟡' : 'ต่ำ 🟢'}
+                      </span>
+                    </div>
+
+                    {/* 3-D Pills Row */}
+                    <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
+                      {aiSuggestion.impact && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.78rem', padding: '3px 8px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.12)', color: '#2563eb', border: '1px solid rgba(59, 130, 246, 0.25)', fontWeight: 700 }}>
+                          🎯 ผลกระทบ: {aiSuggestion.impact === 'High' ? 'สูง' : aiSuggestion.impact === 'Medium' ? 'กลาง' : 'ต่ำ'}
                         </span>
                       )}
-                    </span>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-main)', marginTop: '0.3rem', lineHeight: 1.4 }}>
-                      <strong>เหตุผล:</strong> {aiSuggestion.reason}
+                      {aiSuggestion.urgency && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.78rem', padding: '3px 8px', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.12)', color: '#d97706', border: '1px solid rgba(245, 158, 11, 0.25)', fontWeight: 700 }}>
+                          ⚡ ความเร่งด่วน: {aiSuggestion.urgency === 'High' ? 'ด่วนมาก' : aiSuggestion.urgency === 'Medium' ? 'ปานกลาง' : 'ไม่เร่งด่วน'}
+                        </span>
+                      )}
+                      {aiSuggestion.estimatedMinutes && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.78rem', padding: '3px 8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.12)', color: '#059669', border: '1px solid rgba(16, 185, 129, 0.25)', fontWeight: 700 }}>
+                          ⏱️ เวลาที่แนะนำ: {aiSuggestion.estimatedMinutes} นาที (กรอกให้อัตโนมัติ ✨)
+                        </span>
+                      )}
+                      {aiSuggestion.deadline && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.78rem', padding: '3px 8px', borderRadius: '8px', background: 'rgba(139, 92, 246, 0.12)', color: '#7c3aed', border: '1px solid rgba(139, 92, 246, 0.25)', fontWeight: 700 }}>
+                          📅 เดดไลน์: {formatThaiDateLabel(aiSuggestion.deadline)}
+                        </span>
+                      )}
+                    </div>
+
+                    <p style={{ fontSize: '0.82rem', color: 'var(--text-main)', margin: 0, lineHeight: 1.45 }}>
+                      <strong>เหตุผลการประเมิน:</strong> {aiSuggestion.reason}
                     </p>
                   </div>
                 </div>
@@ -2023,23 +2063,45 @@ const TaskList = ({ searchQuery, setSearchQuery, setCurrentTab }) => {
                 />
               </div>
 
-              {/* AI Suggestion Area for edit mode */}
+              {/* AI Suggestion Area for edit mode (3-D Matrix: Impact, Urgency, Effort) */}
               {editAiSuggestion && (
-                <div className="ai-suggest-banner" style={{ marginBottom: '1.5rem' }}>
+                <div className="ai-suggest-banner" style={{ marginBottom: '1.5rem', borderRadius: '18px', padding: '1rem 1.15rem', background: 'linear-gradient(135deg, rgba(138, 92, 245, 0.08) 0%, rgba(76, 175, 80, 0.08) 100%)', border: '1px solid rgba(138, 92, 245, 0.25)' }}>
                   <div className="ai-suggest-info">
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-purple)', display: 'flex', alignItems: 'center', gap: '0.25rem', flexWrap: 'wrap' }}>
-                      <Sparkles size={14} /> AI แนะนำระดับความสำคัญ: 
-                      <span className={`badge badge-${editAiSuggestion.priority.toLowerCase()}`}>
-                        {editAiSuggestion.priority === 'High' ? 'สูง' : editAiSuggestion.priority === 'Medium' ? 'กลาง' : 'ต่ำ'}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--accent-purple)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Sparkles size={16} /> AI วิเคราะห์ 3 มิติสากล (3-D Matrix)
                       </span>
-                      {editAiSuggestion.deadline && (
-                        <span style={{ fontSize: '0.8rem', color: '#2e7d32', fontWeight: 700, marginLeft: '8px' }}>
-                           📅 สกัดวันที่ (วัน/เดือน/ปี): {formatThaiDateLabel(editAiSuggestion.deadline)}
+                      <span className={`badge badge-${editAiSuggestion.priority?.toLowerCase() || 'medium'}`} style={{ fontWeight: 800 }}>
+                        ระดับรวม: {editAiSuggestion.priority === 'High' ? 'สูง 🔴' : editAiSuggestion.priority === 'Medium' ? 'กลาง 🟡' : 'ต่ำ 🟢'}
+                      </span>
+                    </div>
+
+                    {/* 3-D Pills Row */}
+                    <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
+                      {editAiSuggestion.impact && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.78rem', padding: '3px 8px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.12)', color: '#2563eb', border: '1px solid rgba(59, 130, 246, 0.25)', fontWeight: 700 }}>
+                          🎯 ผลกระทบ: {editAiSuggestion.impact === 'High' ? 'สูง' : editAiSuggestion.impact === 'Medium' ? 'กลาง' : 'ต่ำ'}
                         </span>
                       )}
-                    </span>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-main)', marginTop: '0.3rem', lineHeight: 1.4 }}>
-                      <strong>เหตุผล:</strong> {editAiSuggestion.reason}
+                      {editAiSuggestion.urgency && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.78rem', padding: '3px 8px', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.12)', color: '#d97706', border: '1px solid rgba(245, 158, 11, 0.25)', fontWeight: 700 }}>
+                          ⚡ ความเร่งด่วน: {editAiSuggestion.urgency === 'High' ? 'ด่วนมาก' : editAiSuggestion.urgency === 'Medium' ? 'ปานกลาง' : 'ไม่เร่งด่วน'}
+                        </span>
+                      )}
+                      {editAiSuggestion.estimatedMinutes && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.78rem', padding: '3px 8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.12)', color: '#059669', border: '1px solid rgba(16, 185, 129, 0.25)', fontWeight: 700 }}>
+                          ⏱️ เวลาที่แนะนำ: {editAiSuggestion.estimatedMinutes} นาที (กรอกให้อัตโนมัติ ✨)
+                        </span>
+                      )}
+                      {editAiSuggestion.deadline && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.78rem', padding: '3px 8px', borderRadius: '8px', background: 'rgba(139, 92, 246, 0.12)', color: '#7c3aed', border: '1px solid rgba(139, 92, 246, 0.25)', fontWeight: 700 }}>
+                          📅 เดดไลน์: {formatThaiDateLabel(editAiSuggestion.deadline)}
+                        </span>
+                      )}
+                    </div>
+
+                    <p style={{ fontSize: '0.82rem', color: 'var(--text-main)', margin: 0, lineHeight: 1.45 }}>
+                      <strong>เหตุผลการประเมิน:</strong> {editAiSuggestion.reason}
                     </p>
                   </div>
                 </div>

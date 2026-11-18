@@ -51,8 +51,8 @@ const extractRelativeDeadline = (title, description) => {
   return null;
 };
 
-// Helper: Gradual Multi-Tier Step-by-Step Priority Escalation in Thailand Time (0-2 Days = High, 3-5 Days = Medium)
-const getGradualEscalatedPriority = (currentPriority, deadline, isCompleted) => {
+// Helper: Gradual Multi-Tier Step-by-Step Priority Escalation in Thailand Time (Effort-Aware & Deadline-Aware)
+const getGradualEscalatedPriority = (currentPriority, deadline, isCompleted, targetTime = 0) => {
   if (!deadline || isCompleted) return { priority: currentPriority, reason: null };
 
   const todayStr = getBangkokDateStr();
@@ -74,7 +74,16 @@ const getGradualEscalatedPriority = (currentPriority, deadline, isCompleted) => 
       };
     }
   }
-  // Tier 2: Remaining 3 to 5 days -> Escalate Low to Medium (🟡 Yellow)
+  // Tier 2 (Effort-Aware): Heavy workload (>= 120 mins) & remaining <= 4 days -> Escalate to High
+  else if (targetTime >= 120 && diffDays <= 4) {
+    if (currentPriority !== 'High') {
+      return {
+        priority: 'High',
+        reason: `⚡ ยกระดับเป็นความสำคัญสูงให้อัตโนมัติ (เป็นงานขนาดใหญ่ ~${Math.round(targetTime / 60)} ชั่วโมง และเหลือเวลาอีก ${diffDays} วัน เพื่อป้องกันการทำไม่ทัน)`
+      };
+    }
+  }
+  // Tier 3: Remaining 3 to 5 days -> Escalate Low to Medium (🟡 Yellow)
   else if (diffDays <= 5) {
     if (currentPriority === 'Low') {
       return {
@@ -90,7 +99,25 @@ const getGradualEscalatedPriority = (currentPriority, deadline, isCompleted) => 
 // Create a new task
 router.post('/', auth, async (req, res) => {
   try {
-    const { title, description, priority, aiPriority, aiReason, isConfirmed, deadline, targetTime, progress, googleEventId, lastSyncedPriority, reminderTime, customReminderMinutes, reminderMethod } = req.body;
+    const { 
+      title, 
+      description, 
+      priority, 
+      aiPriority, 
+      aiReason, 
+      impact, 
+      urgency, 
+      estimatedMinutes, 
+      isConfirmed, 
+      deadline, 
+      targetTime, 
+      progress, 
+      googleEventId, 
+      lastSyncedPriority, 
+      reminderTime, 
+      customReminderMinutes, 
+      reminderMethod 
+    } = req.body;
 
     if (!title) {
       return res.status(400).json({ message: 'Task title is required.' });
@@ -101,9 +128,10 @@ router.post('/', auth, async (req, res) => {
     let initProgress = progress !== undefined ? Math.min(100, Math.max(0, Number(progress))) : 0;
     let initCompleted = initProgress >= 100;
     let inputPriority = priority || 'Medium';
+    const effectiveTargetTime = Number(targetTime) || Number(estimatedMinutes) || 0;
 
-    // Step-by-Step Gradual Auto-Escalation check on creation
-    const escalation = getGradualEscalatedPriority(inputPriority, finalDeadline, initCompleted);
+    // Step-by-Step Gradual Effort-Aware Auto-Escalation check on creation
+    const escalation = getGradualEscalatedPriority(inputPriority, finalDeadline, initCompleted, effectiveTargetTime);
     let finalPriority = escalation.priority;
     let finalAiReason = aiReason || (escalation.reason || '');
 
@@ -114,10 +142,13 @@ router.post('/', auth, async (req, res) => {
       priority: finalPriority,
       aiPriority: aiPriority || 'None',
       aiReason: finalAiReason,
+      impact: impact || 'None',
+      urgency: urgency || 'None',
+      estimatedMinutes: Number(estimatedMinutes) || effectiveTargetTime,
       isConfirmed: isConfirmed || false,
       completed: initCompleted,
       deadline: finalDeadline,
-      targetTime: Number(targetTime) || 0,
+      targetTime: effectiveTargetTime,
       progress: initProgress,
       googleEventId: googleEventId || '',
       lastSyncedPriority: lastSyncedPriority || '',
@@ -138,10 +169,10 @@ router.get('/', auth, async (req, res) => {
   try {
     const tasks = await Task.find({ user: req.userId });
     
-    // Step-by-step gradual auto-escalation check for all pending tasks
+    // Step-by-step gradual effort-aware auto-escalation check for all pending tasks
     for (let task of tasks) {
       if (!task.completed && task.deadline) {
-        const escalation = getGradualEscalatedPriority(task.priority, task.deadline, task.completed);
+        const escalation = getGradualEscalatedPriority(task.priority, task.deadline, task.completed, task.targetTime || task.estimatedMinutes || 0);
         if (escalation.priority !== task.priority) {
           task.priority = escalation.priority;
           if (escalation.reason) {
@@ -179,7 +210,28 @@ router.get('/', auth, async (req, res) => {
 // Update a task (edit content, toggle completion, update pomodoro stats, target time & progress)
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { title, description, priority, isConfirmed, completed, deadline, targetTime, progress, pomodoroCycles, timeSpent, googleEventId, lastSyncedPriority, reminderTime, customReminderMinutes, reminderMethod } = req.body;
+    const { 
+      title, 
+      description, 
+      priority, 
+      aiPriority, 
+      aiReason, 
+      impact, 
+      urgency, 
+      estimatedMinutes, 
+      isConfirmed, 
+      completed, 
+      deadline, 
+      targetTime, 
+      progress, 
+      pomodoroCycles, 
+      timeSpent, 
+      googleEventId, 
+      lastSyncedPriority, 
+      reminderTime, 
+      customReminderMinutes, 
+      reminderMethod 
+    } = req.body;
     
     const task = await Task.findOne({ _id: req.params.id, user: req.userId });
     if (!task) {
@@ -189,6 +241,11 @@ router.put('/:id', auth, async (req, res) => {
     if (title !== undefined) task.title = title;
     if (description !== undefined) task.description = description;
     if (priority !== undefined) task.priority = priority;
+    if (aiPriority !== undefined) task.aiPriority = aiPriority;
+    if (aiReason !== undefined) task.aiReason = aiReason;
+    if (impact !== undefined) task.impact = impact;
+    if (urgency !== undefined) task.urgency = urgency;
+    if (estimatedMinutes !== undefined) task.estimatedMinutes = Number(estimatedMinutes);
     if (isConfirmed !== undefined) task.isConfirmed = isConfirmed;
     if (deadline !== undefined) task.deadline = deadline;
     if (targetTime !== undefined) task.targetTime = Number(targetTime);

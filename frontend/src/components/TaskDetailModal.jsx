@@ -138,12 +138,34 @@ const TaskDetailModal = ({ task, onClose, onEdit, onDelete, onToggleComplete, on
           </div>
         </div>
 
-        {/* AI Priority Analysis Reason */}
+        {/* AI Priority Analysis Reason & 3-D Matrix Breakdown */}
         {task.aiReason && (
           <div style={{ marginBottom: '1.25rem' }}>
             <h4 style={{ fontSize: '0.82rem', color: 'var(--accent-purple)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.4rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <Sparkles size={16} /> ผลวิเคราะห์ความสำคัญจาก AI
+              <Sparkles size={16} /> ผลวิเคราะห์ความสำคัญ 3 มิติ (3-D Matrix)
             </h4>
+
+            {/* 3-D Breakdown Pills */}
+            {((task.impact && task.impact !== 'None') || (task.urgency && task.urgency !== 'None') || task.estimatedMinutes > 0) && (
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                {task.impact && task.impact !== 'None' && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.12)', color: '#2563eb', border: '1px solid rgba(59, 130, 246, 0.25)', fontWeight: 700 }}>
+                    🎯 ผลกระทบ: {task.impact === 'High' ? 'สูง' : task.impact === 'Medium' ? 'กลาง' : 'ต่ำ'}
+                  </span>
+                )}
+                {task.urgency && task.urgency !== 'None' && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.12)', color: '#d97706', border: '1px solid rgba(245, 158, 11, 0.25)', fontWeight: 700 }}>
+                    ⚡ ความเร่งด่วน: {task.urgency === 'High' ? 'ด่วนมาก' : task.urgency === 'Medium' ? 'ปานกลาง' : 'ไม่เร่งด่วน'}
+                  </span>
+                )}
+                {task.estimatedMinutes > 0 && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.12)', color: '#059669', border: '1px solid rgba(16, 185, 129, 0.25)', fontWeight: 700 }}>
+                    ⏱️ เวลาประเมิน: {task.estimatedMinutes} นาที
+                  </span>
+                )}
+              </div>
+            )}
+
             <div style={{
               background: 'rgba(138, 92, 245, 0.1)',
               border: '1px solid rgba(138, 92, 245, 0.25)',
