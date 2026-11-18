@@ -28,21 +28,22 @@ const extractRelativeDeadline = (title, description) => {
   const todayStr = getBangkokDateStr();
   const todayMidnight = new Date(`${todayStr}T00:00:00.000+07:00`);
   
-  if (combinedText.includes('วันนี้')) {
+  if (combinedText.includes('วันนี้') || combinedText.includes('today') || combinedText.includes('tonight')) {
     return new Date(`${todayStr}T23:59:59.999+07:00`);
-  } else if (combinedText.includes('พรุ่งนี้')) {
+  } else if (combinedText.includes('พรุ่งนี้') || combinedText.includes('tomorrow')) {
     const tomorrow = new Date(todayMidnight.getTime() + 24 * 60 * 60 * 1000);
     const tomorrowStr = getBangkokDateStr(tomorrow);
     return new Date(`${tomorrowStr}T23:59:59.999+07:00`);
-  } else if (combinedText.includes('มะรืนนี้')) {
+  } else if (combinedText.includes('มะรืนนี้') || combinedText.includes('day after tomorrow')) {
     const dayAfter = new Date(todayMidnight.getTime() + 48 * 60 * 60 * 1000);
     const dayAfterStr = getBangkokDateStr(dayAfter);
     return new Date(`${dayAfterStr}T23:59:59.999+07:00`);
   } else {
-    // Match "อีก X วัน"
-    const matchDays = combinedText.match(/อีก\s*(\d+)\s*วัน/);
-    if (matchDays && matchDays[1]) {
-      const daysToAdd = parseInt(matchDays[1], 10);
+    // Match "อีก X วัน" or "in X days"
+    const matchThaiDays = combinedText.match(/อีก\s*(\d+)\s*วัน/);
+    const matchEngDays = combinedText.match(/in\s*(\d+)\s*days?/);
+    const daysToAdd = matchThaiDays ? parseInt(matchThaiDays[1], 10) : (matchEngDays ? parseInt(matchEngDays[1], 10) : null);
+    if (daysToAdd !== null) {
       const targetDate = new Date(todayMidnight.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
       const targetDateStr = getBangkokDateStr(targetDate);
       return new Date(`${targetDateStr}T23:59:59.999+07:00`);

@@ -57,12 +57,13 @@ export const getActiveAIConfig = async () => {
  */
 const buildTaskAnalysisPrompt = (title, description, todayStr, todayDayName) => {
   return `You are an intelligent task management assistant adhering to the Global 3-D Prioritization Matrix (Impact, Urgency, Effort).
+The user may provide task details in Thai, English, or a mix of both (Bilingual support).
 Analyze the following university student's task and evaluate:
 1. "impact": 'High' | 'Medium' | 'Low' (educational, career, or personal consequences/importance)
 2. "urgency": 'High' | 'Medium' | 'Low' (time sensitivity, deadline proximity)
 3. "priority": 'High' | 'Medium' | 'Low' (overall priority derived from impact and urgency)
 4. "estimatedMinutes": estimated integer minutes required to finish this task (e.g., quick chore/email: 15-30, homework/reading: 45-60, comprehensive report/slides/exam prep: 90-180)
-5. "deadline": YYYY-MM-DD or null (if relative Thai date like 'วันนี้', 'พรุ่งนี้', 'มะรืนนี้', 'อีก X วัน', 'วันศุกร์นี้' is mentioned)
+5. "deadline": YYYY-MM-DD or null (if relative date in Thai like 'วันนี้', 'พรุ่งนี้', 'มะรืนนี้', 'อีก X วัน' or English like 'today', 'tonight', 'tomorrow', 'day after tomorrow', 'in X days', 'next Monday/Friday' is mentioned)
 6. "reason": Professional, clear explanation in Thai (1-3 sentences) summarizing the 3-D evaluation (Impact, Urgency, and Workload).
 
 Today's reference date in Thailand is: ${todayStr} (${todayDayName}).
@@ -218,12 +219,18 @@ export const fallbackRuleBasedAnalysis = (title = '', description = '', todayStr
     'ด่วน', 'สอบ', 'ส่งอาจารย์', 'พรีเซนต์', 'วิกฤต', 'สำคัญมาก', 
     'เดดไลน์', 'นัดสำคัญ', 'สัมภาษณ์', 'พรุ่งนี้', 'คืนนี้', 'ส่งงาน',
     'จบการศึกษา', 'อนุมัติ', 'คะแนน', 'ไฟนอล', 'มิดเทอม', 'พรีเซนเทชัน',
-    'เดินทาง', 'เครื่องบิน', 'สัมมนา', 'โปรเจกต์', 'ปริญญานิพนธ์'
+    'เดินทาง', 'เครื่องบิน', 'สัมมนา', 'โปรเจกต์', 'ปริญญานิพนธ์',
+    'exam', 'test', 'quiz', 'final', 'midterm', 'urgent', 'deadline',
+    'presentation', 'submit', 'assignment', 'homework', 'project',
+    'interview', 'thesis', 'defense', 'tomorrow', 'tonight', 'today',
+    'critical', 'important', 'due'
   ];
   
   const lowKeywords = [
     'พักผ่อน', 'ดูหนัง', 'เล่นเกม', 'ช้อปปิ้ง', 'ทำความสะอาด', 'ซักผ้า', 
-    'เดินเล่น', 'ชิล', 'ผ่อนคลาย', 'การ์ตูน', 'ฟังเพลง', 'ยืดเส้น', 'กวาดห้อง'
+    'เดินเล่น', 'ชิล', 'ผ่อนคลาย', 'การ์ตูน', 'ฟังเพลง', 'ยืดเส้น', 'กวาดห้อง',
+    'relax', 'movie', 'game', 'play', 'shopping', 'cleaning', 'laundry',
+    'chill', 'sleep', 'rest', 'walk'
   ];
 
   let impact = 'Medium';
@@ -235,36 +242,45 @@ export const fallbackRuleBasedAnalysis = (title = '', description = '', todayStr
     impact = 'High';
     urgency = 'High';
     estimatedMinutes = 90;
-    reason = 'วิเคราะห์จากระบบอัตโนมัติ: มีคำสำคัญที่แสดงถึงผลกระทบสูงและความเร่งด่วนต่องาน/การศึกษา';
+    reason = 'วิเคราะห์จากระบบอัตโนมัติ: มีคำสำคัญที่แสดงถึงผลกระทบสูงและความเร่งด่วนต่องาน/การศึกษา (High Impact & Urgency Detected)';
   } else if (lowKeywords.some(keyword => combinedText.includes(keyword))) {
     priority = 'Low';
     impact = 'Low';
     urgency = 'Low';
     estimatedMinutes = 25;
-    reason = 'วิเคราะห์จากระบบอัตโนมัติ: เป็นกิจกรรมผ่อนคลายหรืองานเบาทั่วไป';
+    reason = 'วิเคราะห์จากระบบอัตโนมัติ: เป็นกิจกรรมผ่อนคลายหรืองานเบาทั่วไป (Low Impact Routine Activity)';
   } else {
     priority = 'Medium';
     impact = 'Medium';
     urgency = 'Medium';
     estimatedMinutes = 45;
-    reason = 'วิเคราะห์จากระบบอัตโนมัติ: กิจกรรมทั่วไปที่มีความสำคัญและภาระงานปานกลาง';
+    reason = 'วิเคราะห์จากระบบอัตโนมัติ: กิจกรรมทั่วไปที่มีความสำคัญและภาระงานปานกลาง (Medium Workload)';
   }
 
-  // Thai Date Extraction
+  // Bilingual Thai & English Date Extraction
   let deadline = null;
   const today = new Date();
-  const currentYear = today.getFullYear();
 
-  if (combinedText.includes('วันนี้')) {
+  if (combinedText.includes('วันนี้') || combinedText.includes('today') || combinedText.includes('tonight')) {
     deadline = todayStr;
-  } else if (combinedText.includes('พรุ่งนี้')) {
+  } else if (combinedText.includes('พรุ่งนี้') || combinedText.includes('tomorrow')) {
     const d = new Date(today);
     d.setDate(d.getDate() + 1);
     deadline = getBangkokDateStr(d);
-  } else if (combinedText.includes('มะรืนนี้')) {
+  } else if (combinedText.includes('มะรืนนี้') || combinedText.includes('day after tomorrow')) {
     const d = new Date(today);
     d.setDate(d.getDate() + 2);
     deadline = getBangkokDateStr(d);
+  } else {
+    // Match "อีก X วัน" or "in X days"
+    const matchThaiDays = combinedText.match(/อีก\s*(\d+)\s*วัน/);
+    const matchEngDays = combinedText.match(/in\s*(\d+)\s*days?/);
+    const daysToAdd = matchThaiDays ? parseInt(matchThaiDays[1], 10) : (matchEngDays ? parseInt(matchEngDays[1], 10) : null);
+    if (daysToAdd !== null) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + daysToAdd);
+      deadline = getBangkokDateStr(d);
+    }
   }
 
   return {

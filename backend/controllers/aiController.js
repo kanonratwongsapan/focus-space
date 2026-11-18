@@ -24,10 +24,16 @@ const fallbackRuleBasedAnalysis = (title, description, todayStr, res, prefix = '
   let priority = 'Medium';
   let reason = '';
 
-  // High priority keywords
-  const highKeywords = ['ด่วน', 'สอบ', 'ส่งงาน', 'ส่งโปรเจกต์', 'สัมภาษณ์', 'วันนี้', 'พรุ่งนี้', 'สำคัญมาก', 'วิกฤต', 'ประชุมสำคัญ', 'เดดไลน์', 'deadline', 'urgent', 'must', 'ห้ามเลท', 'สัมมนา', 'ราชการ', 'สำเร็จการศึกษา', 'ส่งคะแนน', 'ทะเบียนกลาง', 'ตรวจงาน', 'ประเมิน', 'ส่งโปรเจค', 'โปรเจค', 'วิทยานิพนธ์', 'สหกิจศึกษา', 'ที่ปรึกษา', 'เล่มรายงาน', 'excel', 'ตารางคะแนน'];
-  // Low priority keywords
-  const lowKeywords = ['ว่าง', 'เรื่อยๆ', 'เมื่อไหร่ก็ได้', 'ดูซีรีส์', 'ดูหนัง', 'เล่นเกม', 'พักผ่อน', 'งานอดิเรก', 'ซักผ้า', 'กวาดบ้าน', 'จัดห้อง', 'ถูบ้าน', 'นอน'];
+  // High priority keywords (Bilingual TH / EN)
+  const highKeywords = [
+    'ด่วน', 'สอบ', 'ส่งงาน', 'ส่งโปรเจกต์', 'สัมภาษณ์', 'วันนี้', 'พรุ่งนี้', 'สำคัญมาก', 'วิกฤต', 'ประชุมสำคัญ', 'เดดไลน์', 'deadline', 'urgent', 'must', 'ห้ามเลท', 'สัมมนา', 'ราชการ', 'สำเร็จการศึกษา', 'ส่งคะแนน', 'ทะเบียนกลาง', 'ตรวจงาน', 'ประเมิน', 'ส่งโปรเจค', 'โปรเจค', 'วิทยานิพนธ์', 'สหกิจศึกษา', 'ที่ปรึกษา', 'เล่มรายงาน', 'excel', 'ตารางคะแนน',
+    'exam', 'test', 'quiz', 'final', 'midterm', 'presentation', 'submit', 'assignment', 'homework', 'project', 'interview', 'thesis', 'defense', 'tomorrow', 'tonight', 'today', 'critical', 'important', 'due'
+  ];
+  // Low priority keywords (Bilingual TH / EN)
+  const lowKeywords = [
+    'ว่าง', 'เรื่อยๆ', 'เมื่อไหร่ก็ได้', 'ดูซีรีส์', 'ดูหนัง', 'เล่นเกม', 'พักผ่อน', 'งานอดิเรก', 'ซักผ้า', 'กวาดบ้าน', 'จัดห้อง', 'ถูบ้าน', 'นอน',
+    'relax', 'movie', 'game', 'play', 'shopping', 'cleaning', 'laundry', 'chill', 'sleep', 'rest', 'walk'
+  ];
 
   const matchedHigh = highKeywords.filter(keyword => combinedText.includes(keyword));
   const matchedLow = lowKeywords.filter(keyword => combinedText.includes(keyword));
@@ -44,17 +50,17 @@ const fallbackRuleBasedAnalysis = (title, description, todayStr, res, prefix = '
     
     // Customize rule-based reason based on matched critical concepts
     let details = [];
-    if (combinedText.includes('ห้ามเลท') || combinedText.includes('เดดไลน์') || combinedText.includes('กำหนดส่ง')) {
-      details.push('มีกำหนดเวลาจำกัด/ห้ามส่งช้า');
+    if (combinedText.includes('ห้ามเลท') || combinedText.includes('เดดไลน์') || combinedText.includes('กำหนดส่ง') || combinedText.includes('deadline') || combinedText.includes('urgent') || combinedText.includes('due')) {
+      details.push('มีกำหนดเวลาจำกัด/ห้ามส่งช้า (Deadline Restriction)');
     }
-    if (combinedText.includes('สำเร็จการศึกษา') || combinedText.includes('ทะเบียนกลาง') || combinedText.includes('คะแนน')) {
-      details.push('มีผลกระทบต่อนักศึกษา/การลงทะเบียนเรียน');
+    if (combinedText.includes('สำเร็จการศึกษา') || combinedText.includes('ทะเบียนกลาง') || combinedText.includes('คะแนน') || combinedText.includes('exam') || combinedText.includes('final') || combinedText.includes('test')) {
+      details.push('มีผลกระทบต่อนักศึกษา/การวัดผลคะแนน (Academic Impact)');
     }
     if (combinedText.includes('ราชการ') || combinedText.includes('ต่างจังหวัด') || combinedText.includes('เดินทาง')) {
       details.push('เกี่ยวข้องกับการเดินทางราชการ/ข้อจำกัดด้านเวลา');
     }
-    if (combinedText.includes('เล่มรายงาน') || combinedText.includes('ตรวจงาน') || combinedText.includes('อ่าน')) {
-      details.push('มีภาระงานปริมาณมากที่ต้องใช้เวลาเตรียมตัว');
+    if (combinedText.includes('เล่มรายงาน') || combinedText.includes('ตรวจงาน') || combinedText.includes('อ่าน') || combinedText.includes('report') || combinedText.includes('project') || combinedText.includes('thesis')) {
+      details.push('มีภาระงานปริมาณมากที่ต้องใช้เวลาเตรียมตัว (High Workload)');
     }
 
     if (details.length > 0) {
@@ -88,15 +94,15 @@ const parseThaiDateFromText = (text) => {
   const today = new Date();
   const currentYear = today.getFullYear();
 
-  if (lower.includes('วันนี้')) {
+  if (lower.includes('วันนี้') || lower.includes('today') || lower.includes('tonight')) {
     return today.toISOString().split('T')[0];
   }
-  if (lower.includes('พรุ่งนี้')) {
+  if (lower.includes('พรุ่งนี้') || lower.includes('tomorrow')) {
     const d = new Date(today);
     d.setDate(d.getDate() + 1);
     return d.toISOString().split('T')[0];
   }
-  if (lower.includes('มะรืนนี้')) {
+  if (lower.includes('มะรืนนี้') || lower.includes('day after tomorrow')) {
     const d = new Date(today);
     d.setDate(d.getDate() + 2);
     return d.toISOString().split('T')[0];
@@ -135,9 +141,10 @@ const parseThaiDateFromText = (text) => {
     }
   }
 
-  const matchDays = lower.match(/อีก\s*(\d+)\s*วัน/);
-  if (matchDays && matchDays[1]) {
-    const daysToAdd = parseInt(matchDays[1], 10);
+  const matchThaiDays = lower.match(/อีก\s*(\d+)\s*วัน/);
+  const matchEngDays = lower.match(/in\s*(\d+)\s*days?/);
+  const daysToAdd = matchThaiDays ? parseInt(matchThaiDays[1], 10) : (matchEngDays ? parseInt(matchEngDays[1], 10) : null);
+  if (daysToAdd !== null) {
     const d = new Date(today);
     d.setDate(d.getDate() + daysToAdd);
     return d.toISOString().split('T')[0];
