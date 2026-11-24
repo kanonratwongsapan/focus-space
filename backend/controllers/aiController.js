@@ -93,19 +93,27 @@ const parseThaiDateFromText = (text) => {
   const lower = text.toLowerCase();
   const today = new Date();
   const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+
+  const toDateStr = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
 
   if (lower.includes('วันนี้') || lower.includes('today') || lower.includes('tonight')) {
-    return today.toISOString().split('T')[0];
+    return toDateStr(today);
   }
   if (lower.includes('พรุ่งนี้') || lower.includes('tomorrow')) {
     const d = new Date(today);
     d.setDate(d.getDate() + 1);
-    return d.toISOString().split('T')[0];
+    return toDateStr(d);
   }
   if (lower.includes('มะรืนนี้') || lower.includes('day after tomorrow')) {
     const d = new Date(today);
     d.setDate(d.getDate() + 2);
-    return d.toISOString().split('T')[0];
+    return toDateStr(d);
   }
 
   const thaiMonths = {
@@ -125,18 +133,24 @@ const parseThaiDateFromText = (text) => {
 
   for (const [monthName, monthIndex] of Object.entries(thaiMonths)) {
     if (lower.includes(monthName)) {
-      const dayMatch = lower.match(new RegExp(`(\\d{1,2})(?:\\s*-\\s*\\d{1,2})?\\s*${monthName.replace('.', '\\.')}(?:\\s*(\\d{4}))?`));
+      const pattern = new RegExp(`(?:วันที่|วัน[ก-๙]+ที่)?\\s*(\\d{1,2})(?:\\s*-\\s*\\d{1,2})?\\s*${monthName.replace('.', '\\.')}(?:\\s*(?:พ\\.ศ\\.|ค\\.ศ\\.)?\\s*(\\d{2,4}))?`);
+      const dayMatch = lower.match(pattern);
       if (dayMatch) {
         const day = parseInt(dayMatch[1], 10);
         let year = currentYear;
         if (dayMatch[2]) {
-          const parsedYear = parseInt(dayMatch[2], 10);
-          year = parsedYear > 2500 ? parsedYear - 543 : parsedYear;
-        } else if (monthIndex < today.getMonth()) {
+          let parsedYear = parseInt(dayMatch[2], 10);
+          if (parsedYear > 2500) {
+            year = parsedYear - 543;
+          } else if (parsedYear >= 2000) {
+            year = parsedYear;
+          } else if (parsedYear < 100) {
+            year = (2500 + parsedYear) - 543;
+          }
+        } else if (monthIndex < currentMonth) {
           year = currentYear + 1;
         }
-        const dateObj = new Date(year, monthIndex, day);
-        return dateObj.toISOString().split('T')[0];
+        return `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       }
     }
   }
@@ -147,7 +161,7 @@ const parseThaiDateFromText = (text) => {
   if (daysToAdd !== null) {
     const d = new Date(today);
     d.setDate(d.getDate() + daysToAdd);
-    return d.toISOString().split('T')[0];
+    return toDateStr(d);
   }
 
   return null;

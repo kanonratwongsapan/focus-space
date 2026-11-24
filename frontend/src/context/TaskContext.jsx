@@ -375,13 +375,20 @@ export const TaskProvider = ({ children }) => {
 
       for (const [monthName, monthIndex] of Object.entries(thaiMonths)) {
         if (combinedText.includes(monthName)) {
-          const dayMatch = combinedText.match(new RegExp(`(\\d{1,2})(?:\\s*-\\s*\\d{1,2})?\\s*${monthName.replace('.', '\\.')}(?:\\s*(\\d{4}))?`));
+          const pattern = new RegExp(`(?:วันที่|วัน[ก-๙]+ที่)?\\s*(\\d{1,2})(?:\\s*-\\s*\\d{1,2})?\\s*${monthName.replace('.', '\\.')}(?:\\s*(?:พ\\.ศ\\.|ค\\.ศ\\.)?\\s*(\\d{2,4}))?`);
+          const dayMatch = combinedText.match(pattern);
           if (dayMatch) {
             const day = parseInt(dayMatch[1], 10);
             let year = currentYear;
             if (dayMatch[2]) {
-              const parsedYear = parseInt(dayMatch[2], 10);
-              year = parsedYear > 2500 ? parsedYear - 543 : parsedYear;
+              let parsedYear = parseInt(dayMatch[2], 10);
+              if (parsedYear > 2500) {
+                year = parsedYear - 543;
+              } else if (parsedYear >= 2000) {
+                year = parsedYear;
+              } else if (parsedYear < 100) {
+                year = (2500 + parsedYear) - 543;
+              }
             } else if (monthIndex < currentMonthIndex) {
               year = currentYear + 1;
             }
@@ -417,7 +424,17 @@ export const TaskProvider = ({ children }) => {
       clearTimeout(timeoutId);
 
       if (response.ok) {
-        return await response.json();
+        const data = await response.json();
+        // Client-side safeguard: sanitize Buddhist year if present
+        if (data.deadline && typeof data.deadline === 'string') {
+          const parts = data.deadline.trim().split('-');
+          if (parts.length === 3) {
+            let yr = parseInt(parts[0], 10);
+            if (yr > 2500) yr -= 543;
+            data.deadline = `${yr}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+          }
+        }
+        return data;
       }
       console.warn('Backend returned non-ok status for AI analysis:', response.status);
       return analyzeTaskClientSideFallback(title, description);

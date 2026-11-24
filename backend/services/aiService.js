@@ -63,7 +63,14 @@ Analyze the following university student's task and evaluate:
 2. "urgency": 'High' | 'Medium' | 'Low' (time sensitivity, deadline proximity)
 3. "priority": 'High' | 'Medium' | 'Low' (overall priority derived from impact and urgency)
 4. "estimatedMinutes": estimated integer minutes required to finish this task (e.g., quick chore/email: 15-30, homework/reading: 45-60, comprehensive report/slides/exam prep: 90-180)
-5. "deadline": YYYY-MM-DD or null (if relative date in Thai like 'วันนี้', 'พรุ่งนี้', 'มะรืนนี้', 'อีก X วัน' or English like 'today', 'tonight', 'tomorrow', 'day after tomorrow', 'in X days', 'next Monday/Friday' is mentioned)
+5. "deadline": "YYYY-MM-DD" or null.
+   - Extract the intended deadline date from the text if any is mentioned, either:
+     a) Explicit calendar dates in Thai or English (e.g., '2 ธันวาคม 2569', 'พุธที่ 2 ธันวาคม 2569', '2 ธ.ค. 69', '15 มกราคม', 'Dec 2, 2026', '2026-12-02')
+     b) Relative dates (e.g. 'วันนี้', 'พรุ่งนี้', 'มะรืนนี้', 'อีก X วัน', 'สัปดาห์หน้า', 'today', 'tomorrow', 'next Monday') calculated relative to today (${todayStr}).
+   - CRITICAL REQUIREMENT FOR THAI BUDDHIST YEAR (พ.ศ.):
+     Thai dates frequently use the Buddhist Era (BE / พ.ศ.). You MUST convert Buddhist years to Gregorian Common Era (CE / ค.ศ.) by subtracting 543!
+     For example: '2569' -> '2026' (2569 - 543 = 2026), '69' -> '2026', '2568' -> '2025'.
+     The output deadline MUST ALWAYS be formatted as "YYYY-MM-DD" in the Gregorian Common Era (e.g. "2026-12-02"), NEVER with year > 2500!
 6. "reason": Professional, clear explanation in Thai (1-3 sentences) summarizing the 3-D evaluation (Impact, Urgency, and Workload).
 
 Today's reference date in Thailand is: ${todayStr} (${todayDayName}).
@@ -260,6 +267,8 @@ export const fallbackRuleBasedAnalysis = (title = '', description = '', todayStr
   // Bilingual Thai & English Date Extraction
   let deadline = null;
   const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
 
   if (combinedText.includes('วันนี้') || combinedText.includes('today') || combinedText.includes('tonight')) {
     deadline = todayStr;
@@ -272,14 +281,59 @@ export const fallbackRuleBasedAnalysis = (title = '', description = '', todayStr
     d.setDate(d.getDate() + 2);
     deadline = getBangkokDateStr(d);
   } else {
-    // Match "อีก X วัน" or "in X days"
-    const matchThaiDays = combinedText.match(/อีก\s*(\d+)\s*วัน/);
-    const matchEngDays = combinedText.match(/in\s*(\d+)\s*days?/);
-    const daysToAdd = matchThaiDays ? parseInt(matchThaiDays[1], 10) : (matchEngDays ? parseInt(matchEngDays[1], 10) : null);
-    if (daysToAdd !== null) {
-      const d = new Date(today);
-      d.setDate(d.getDate() + daysToAdd);
-      deadline = getBangkokDateStr(d);
+    // Match explicit Thai calendar dates: e.g. "2 ธันวาคม 2569", "พุธที่ 2 ธันวาคม 2569", "2 ธ.ค. 69"
+    const thaiMonths = {
+      'มกราคม': 0, 'ม.ค.': 0, 'มค': 0,
+      'กุมภาพันธ์': 1, 'ก.พ.': 1, 'กพ': 1,
+      'มีนาคม': 2, 'มี.ค.': 2, 'มีค': 2,
+      'เมษายน': 3, 'เม.ย.': 3, 'เมย': 3,
+      'พฤษภาคม': 4, 'พ.ค.': 4, 'พค': 4,
+      'มิถุนายน': 5, 'มิ.ย.': 5, 'มิย': 5,
+      'กรกฎาคม': 6, 'ก.ค.': 6, 'กค': 6,
+      'สิงหาคม': 7, 'ส.ค.': 7, 'สค': 7,
+      'กันยายน': 8, 'ก.ย.': 8, 'กย': 8,
+      'ตุลาคม': 9, 'ต.ค.': 9, 'ตค': 9,
+      'พฤศจิกายน': 10, 'พ.ย.': 10, 'พย': 10,
+      'ธันวาคม': 11, 'ธ.ค.': 11, 'ธค': 11
+    };
+
+    for (const [monthName, monthIndex] of Object.entries(thaiMonths)) {
+      if (combinedText.includes(monthName)) {
+        const pattern = new RegExp(`(?:วันที่|วัน[ก-๙]+ที่)?\\s*(\\d{1,2})(?:\\s*-\\s*\\d{1,2})?\\s*${monthName.replace('.', '\\.')}(?:\\s*(?:พ\\.ศ\\.|ค\\.ศ\\.)?\\s*(\\d{2,4}))?`);
+        const dayMatch = combinedText.match(pattern);
+        if (dayMatch) {
+          const day = parseInt(dayMatch[1], 10);
+          let year = currentYear;
+          if (dayMatch[2]) {
+            let parsedYear = parseInt(dayMatch[2], 10);
+            if (parsedYear > 2500) {
+              year = parsedYear - 543;
+            } else if (parsedYear >= 2000) {
+              year = parsedYear;
+            } else if (parsedYear < 100) {
+              // 2-digit Thai Buddhist year (e.g. '69' -> 2569 -> 2026)
+              const fullBE = 2500 + parsedYear;
+              year = fullBE - 543;
+            }
+          } else if (monthIndex < currentMonth) {
+            year = currentYear + 1;
+          }
+          deadline = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          break;
+        }
+      }
+    }
+
+    // Match "อีก X วัน" or "in X days" if still not found
+    if (!deadline) {
+      const matchThaiDays = combinedText.match(/อีก\s*(\d+)\s*วัน/);
+      const matchEngDays = combinedText.match(/in\s*(\d+)\s*days?/);
+      const daysToAdd = matchThaiDays ? parseInt(matchThaiDays[1], 10) : (matchEngDays ? parseInt(matchEngDays[1], 10) : null);
+      if (daysToAdd !== null) {
+        const d = new Date(today);
+        d.setDate(d.getDate() + daysToAdd);
+        deadline = getBangkokDateStr(d);
+      }
     }
   }
 
@@ -336,13 +390,25 @@ export const analyzeTaskWithMultiProvider = async (title, description) => {
     }
 
     const parsed = JSON.parse(cleanedJson);
+
+    // Sanitize deadline date (ensure YYYY-MM-DD and convert Buddhist year if model still returned 2569)
+    let sanitizedDeadline = parsed.deadline || null;
+    if (sanitizedDeadline && typeof sanitizedDeadline === 'string') {
+      const dateParts = sanitizedDeadline.trim().split('-');
+      if (dateParts.length === 3) {
+        let yr = parseInt(dateParts[0], 10);
+        if (yr > 2500) yr -= 543;
+        sanitizedDeadline = `${yr}-${dateParts[1].padStart(2, '0')}-${dateParts[2].padStart(2, '0')}`;
+      }
+    }
+
     return {
       priority: parsed.priority || 'Medium',
       impact: parsed.impact || parsed.priority || 'Medium',
       urgency: parsed.urgency || parsed.priority || 'Medium',
       estimatedMinutes: Number(parsed.estimatedMinutes) || 60,
       reason: parsed.reason || `วิเคราะห์ด้วย ${activeProvider.toUpperCase()} (${selectedModel}) สำเร็จ`,
-      deadline: parsed.deadline || null,
+      deadline: sanitizedDeadline,
       isAiSuccess: true,
       provider: activeProvider,
       model: selectedModel
